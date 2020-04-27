@@ -26,6 +26,7 @@ services:
         dockerfile: ${WP_DOCKER}
     ports:
         - ${WP_PORT}:${WP_PORT}
+        - ${WP_PORT_HTTPS}:${WP_PORT_HTTPS}
     environment:
         - WORDPRESS_DB_HOST=${DB_HOST}
         - WORDPRESS_DB_NAME=${DB_NAME}
@@ -40,7 +41,6 @@ services:
         - WORDPRESS_SECURE_AUTH_SALT=${WP_SECURE_AUTH_SALT}
         - WORDPRESS_LOGGED_IN_SALT=${WP_LOGGED_IN_SALT}
         - WORDPRESS_NONCE_SALT=${WP_NONCE_SALT}
-        - WORDPRESS_SERVER_NAME=${WP_LOCAL_SERVER}
     volumes:
         - ${WP_ROOT}:/var/www/html:rw
         - ${PHP_CONFIG}:/usr/local/etc/php/conf.d/conf.ini:rw
