@@ -102,6 +102,18 @@ RewriteRule . /index.php [L]
 
 # END WordPress
 
+
+# BEGIN HotlinkProtection
+
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?cms.loc/.*$ [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?google.com/.*$ [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?bing.com/.*$ [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yahoo.com/.*$ [NC]
+RewriteRule \.(jpg|jpeg|png|gif|svg)$ - [NC,F,L]
+
+# END HotlinkProtection
+
 </IfModule>
 
 
