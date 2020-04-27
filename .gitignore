@@ -1,0 +1,12 @@
+# Database content
+data/db/*
+data/backup/*
+data/sql/*
+
+# Config files
+.env
+#wordpress/wp-config.php
+
+# General files
+.idea/*
+.DS_Store

@@ -1,0 +1,48 @@
+version: '3'
+ 
+services:
+  db:
+    image: mysql:${MYSQL_VERSION}
+    container_name: ${DB_CONTAINER}
+    ports:
+        - ${DB_PORT}:${DB_PORT}
+    environment:
+        - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+        - MYSQL_DATABASE=${DB_NAME}
+        - MYSQL_USER=${DB_USERNAME}
+        - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+        - ${DB_DATA}:/var/lib/mysql:rw
+    command: [
+        '--character-set-server=utf8',
+        '--explicit_defaults_for_timestamp'
+    ]
+    cap_add:
+        - SYS_NICE
+  wp:
+    container_name: ${WP_CONTAINER}
+    build:
+        context: ../../
+        dockerfile: ${WP_DOCKER}
+    ports:
+        - ${WP_PORT}:${WP_PORT}
+    environment:
+        - WORDPRESS_DB_HOST=${DB_HOST}
+        - WORDPRESS_DB_NAME=${DB_NAME}
+        - WORDPRESS_DB_USER=${DB_USERNAME}
+        - WORDPRESS_DB_PASSWORD=${DB_PASSWORD}
+        - WORDPRESS_DEV_MODE=${WP_DEV_MODE}
+        - WORDPRESS_AUTH_KEY=${WP_AUTH_KEY}
+        - WORDPRESS_SECURE_AUTH_KEY=${WP_SECURE_AUTH_KEY}
+        - WORDPRESS_LOGGED_IN_KEY=${WP_LOGGED_IN_KEY}
+        - WORDPRESS_NONCE_KEY=${WP_NONCE_KEY}
+        - WORDPRESS_AUTH_SALT=${WP_AUTH_SALT}
+        - WORDPRESS_SECURE_AUTH_SALT=${WP_SECURE_AUTH_SALT}
+        - WORDPRESS_LOGGED_IN_SALT=${WP_LOGGED_IN_SALT}
+        - WORDPRESS_NONCE_SALT=${WP_NONCE_SALT}
+        - WORDPRESS_SERVER_NAME=${WP_LOCAL_SERVER}
+    volumes:
+        - ${WP_ROOT}:/var/www/html:rw
+        - ${PHP_CONFIG}:/usr/local/etc/php/conf.d/conf.ini:rw
+    depends_on:
+        - db
