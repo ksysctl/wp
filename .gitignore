@@ -5,7 +5,10 @@ data/sql/*
 
 # Config files
 .env
+
+# Wordpress files
 wordpress/wp-config.php
+wordpress/wp-content/cache/*
 
 # General files
 .idea/*
