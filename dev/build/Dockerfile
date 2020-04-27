@@ -6,8 +6,15 @@ LABEL description="WP Project"
 ENV \
     WP_CLI_URL=https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
-RUN echo "\nServerName localhost\n" \
-    >>/etc/apache2/apache2.conf
+# Set http configuration
+COPY dev/deploy/apache/security.conf \
+    /etc/apache2/conf-available/security.conf
+COPY dev/deploy/apache/default.conf \
+    /etc/apache2/sites-available/000-default.conf
+COPY dev/deploy/apache/default.ssl.conf \
+    /etc/apache2/sites-available/default-ssl.conf
+COPY dev/deploy/apache/http.conf \
+    /etc/apache2/apache2.conf
 
 # Update && install basic utilities
 RUN apt-get update && \

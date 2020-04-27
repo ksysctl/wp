@@ -758,3 +758,15 @@ function twentytwenty_get_elements_array() {
 	*/
 	return apply_filters( 'twentytwenty_get_elements_array', $elements );
 }
+
+/**
+ * Remove WP version from pages.
+ *
+ * @since Twenty Twenty 1.0
+ *
+ * @return void
+ */
+function wp_version_remove() {
+	return '';
+}
+add_filter( 'the_generator', 'wp_version_remove' );
