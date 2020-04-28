@@ -141,7 +141,7 @@ final class CRB_2FA {
 					}
 				}
 				if ( crb_array_get( $policies, '2fanewnet4' ) ) {
-					if ( cerber_get_subnet( $last_login['ip'] ) != cerber_get_subnet( cerber_get_remote_ip() ) ) {
+					if ( cerber_get_subnet_ipv4( $last_login['ip'] ) != cerber_get_subnet_ipv4( cerber_get_remote_ip() ) ) {
 						return true;
 					}
 				}

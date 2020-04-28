@@ -30,53 +30,63 @@
 
 */
 
-function cerber_show_imex(){
-	$form = '<h3>'.__('Export settings to the file','wp-cerber').'</h3>';
-	$form .= '<p>'.__('When you click the button below you will get a configuration file, which you can upload on another site.','wp-cerber').'</p>';
-	$form .= '<p>'.__('What do you want to export?','wp-cerber').'</p><form action="" method="get">';
-	$form .= '<input id="exportset" name="exportset" value="1" type="checkbox" checked> <label for="exportset">'.__('Settings','wp-cerber').'</label>';
-	$form .= '<p><input id="exportacl" name="exportacl" value="1" type="checkbox" checked> <label for="exportacl">'.__('Access Lists','wp-cerber').'</label>';
-	$form .= '<p><input type="submit" name="cerber_export" id="submit" class="button button-primary" value="'.__('Download file','wp-cerber').'"></form>';
+function cerber_show_imex() {
+	$form = '<h3>' . __( 'Export settings to the file', 'wp-cerber' ) . '</h3>';
+	$form .= '<p>' . __( 'When you click the button below you will get a configuration file, which you can upload on another site.', 'wp-cerber' ) . '</p>';
+	$form .= '<p>' . __( 'What do you want to export?', 'wp-cerber' ) . '</p><form action="" method="get">';
+	$form .= '<input id="exportset" name="exportset" value="1" type="checkbox" checked> <label for="exportset">' . __( 'Settings', 'wp-cerber' ) . '</label>';
+	$form .= '<p><input id="exportacl" name="exportacl" value="1" type="checkbox" checked> <label for="exportacl">' . __( 'Access Lists', 'wp-cerber' ) . '</label>';
+	$form .= '<p><input type="submit" name="cerber_export" id="submit" class="button button-primary" value="' . __( 'Download file', 'wp-cerber' ) . '"></form>';
 
-	$form .= '<h3 style="margin-top:2em;">'.__('Import settings from the file','wp-cerber').'</h3>';
-	$form .= '<p>'.__('When you click the button below, file will be uploaded and all existing settings will be overridden.','wp-cerber').'</p>';
-	$form .= '<p>'.__('Select file to import.','wp-cerber').' '. sprintf( __( 'Maximum upload file size: %s.'), esc_html(size_format(wp_max_upload_size())));
-	$form .= '<form action="" method="post" enctype="multipart/form-data">'.wp_nonce_field( 'crb_import', 'crb_field');
+	$nf = wp_nonce_field( 'crb_import', 'crb_field' );
+
+	$form .= '<h3 style="margin-top:2em;">' . __( 'Import settings from the file', 'wp-cerber' ) . '</h3>';
+	$form .= '<p>' . __( 'When you click the button below, file will be uploaded and all existing settings will be overridden.', 'wp-cerber' ) . '</p>';
+	$form .= '<p>' . __( 'Select file to import.', 'wp-cerber' ) . ' ' . sprintf( __( 'Maximum upload file size: %s.' ), esc_html( size_format( wp_max_upload_size() ) ) );
+	$form .= '<form action="" method="post" enctype="multipart/form-data">' . $nf;
 	$form .= '<p><input type="file" name="ifile" id="ifile" required="required">';
-	$form .= '<p>'.__('What do you want to import?','wp-cerber').'</p><p><input id="importset" name="importset" value="1" type="checkbox" checked> <label for="importset">'.__('Settings','wp-cerber').'</label>';
-	$form .= '<p><input id="importacl" name="importacl" value="1" type="checkbox" checked> <label for="importacl">'.__('Access Lists','wp-cerber').'</label>';
-	$form .= '<p><input type="submit" name="cerber_import" id="submit" class="button button-primary" value="'.__('Upload file','wp-cerber').'"></p></form>';
+	$form .= '<p>' . __( 'What do you want to import?', 'wp-cerber' ) . '</p><p><input id="importset" name="importset" value="1" type="checkbox" checked> <label for="importset">' . __( 'Settings', 'wp-cerber' ) . '</label>';
+	$form .= '<p><input id="importacl" name="importacl" value="1" type="checkbox" checked> <label for="importacl">' . __( 'Access Lists', 'wp-cerber' ) . '</label>';
+	$form .= '<p><input type="submit" name="cerber_import" id="submit" class="button button-primary" value="' . __( 'Upload file', 'wp-cerber' ) . '"></p></form>';
+
+	$form .= '<h3 style="margin-top:2em;">Bulk load access list entries</h3>';
+
+	$form .= '<form method="post"><input type="hidden" name="acl_text" value="1">' . $nf;
+	$form .= '<p><input type="radio" name="target_acl" value="W" checked="checked">Load to ' . __( 'White IP Access List', 'wp-cerber' ) . '</p>';
+	$form .= '<p><input type="radio" name="target_acl" value="B">Load to ' . __( 'Black IP Access List', 'wp-cerber' ) . '</p>';
+	$form .= '<p><textarea name="import_acl_entries" rows="8" cols="70" placeholder="Enter access list entries, one item per line. To add entry comments, use the CSV format."></textarea></p>';
+	$form .= '<p><input type="submit" name="cerber_import" id="submit" class="button button-primary" value="' . __( 'Load entries', 'wp-cerber' ) . '"></p></form>';
+
 	echo $form;
 }
 /*
 	Create export file
 */
-add_action('admin_init','cerber_export');
-function cerber_export(){
-    global $wpdb;
+add_action( 'admin_init', 'cerber_export' );
+function cerber_export() {
+	global $wpdb;
 
-	if ( !cerber_is_http_get() || ! isset( $_GET['cerber_export'] ) ) {
+	if ( ! cerber_is_http_get() || ! isset( $_GET['cerber_export'] ) ) {
 		return;
 	}
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( 'Error!' );
 	}
-	$p = cerber_plugin_data();
-	$data = array('cerber_version' => $p['Version'],'home'=> cerber_get_home_url(),'date'=>date('d M Y H:i:s'));
-	if (!empty($_GET['exportset'])) {
-	    $data ['options'] = crb_get_settings();
+	$p    = cerber_plugin_data();
+	$data = array( 'cerber_version' => $p['Version'], 'home' => cerber_get_home_url(), 'date' => date( 'd M Y H:i:s' ) );
+	if ( ! empty( $_GET['exportset'] ) ) {
+		$data ['options']   = crb_get_settings();
 		$data ['geo-rules'] = cerber_get_geo_rules();
 	}
 	if ( ! empty( $_GET['exportacl'] ) ) {
 		//$data ['acl'] = cerber_acl_all( 'ip, tag, comments, acl_slice' );
 		$data ['acl'] = $wpdb->get_results( 'SELECT ip, tag, comments, acl_slice FROM ' . CERBER_ACL_TABLE, ARRAY_N );
 	}
-	$file = json_encode($data);
-	$file .= '==/'.strlen($file).'/'.crc32($file).'/EOF';
-	header($_SERVER["SERVER_PROTOCOL"].' 200 OK');
-	header("Content-type: application/force-download");
-	header("Content-Type: application/octet-stream");
-	header("Content-Disposition: attachment; filename=wpcerber.config");
+	$file = json_encode( $data );
+	$file .= '==/' . strlen( $file ) . '/' . crc32( $file ) . '/EOF';
+
+	crb_file_headers( 'wpcerber.config' );
+
 	echo $file;
 	exit;
 }
@@ -88,13 +98,80 @@ function cerber_export(){
 add_action( 'admin_init', 'cerber_import' );
 function cerber_import() {
 	global $wpdb, $wp_cerber;
+
 	if ( ! isset( $_POST['cerber_import'] ) || ! cerber_is_http_post() ) {
 		return;
 	}
+
 	check_admin_referer( 'crb_import', 'crb_field' );
+
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( 'Upload failed.' );
+		wp_die( 'Import failed.' );
 	}
+
+	// Bulk load ACL
+	if ( isset( $_POST['acl_text'] ) ) {
+		if ( ! ( $text = crb_get_post_fields( 'import_acl_entries' ) )
+		     || ! ( $tag = crb_get_post_fields( 'target_acl', false, 'W|B' ) ) ) {
+			cerber_admin_notice( 'No data provided' );
+
+			return;
+		}
+
+		$text  = sanitize_textarea_field( $text );
+		$list  = explode( PHP_EOL, $text );
+		$count = 0;
+
+		foreach ( $list as $line ) {
+			if ( ! $line ) {
+				continue;
+			}
+
+			list( $ip, $comment ) = explode( ',', $line . ',', 3 );
+			$ip      = preg_replace( CRB_IP_NET_RANGE, ' ', $ip );
+			$ip      = preg_replace( '/\s+/', ' ', $ip );
+
+			if ( ! $ip ) {
+				continue;
+			}
+
+			if ( $tag == 'B' ) {
+				if ( ! cerber_can_be_listed( $ip ) ) {
+					cerber_admin_notice( 'Cannot be blacklisted: ' . $ip );
+
+					continue;
+				}
+			}
+
+			$comment = trim( strip_tags( stripslashes( $comment ) ) );
+			$result  = cerber_acl_add( $ip, $tag, $comment );
+
+			if ( $result !== true ) {
+				$msg = 'SKIPPED: ' . $ip . ' ' . $comment;
+				if ( is_wp_error( $result ) ) {
+					$msg .= ' - ' . $result->get_error_message();
+				}
+
+				cerber_admin_notice( $msg );
+			}
+			else {
+				$count ++;
+			}
+		}
+
+		if ( $count ) {
+			$msg = $count . ' access list entries were loaded. <a href="' . cerber_admin_link( 'acl' ) . '">Manage access lists</a>.';
+		}
+		else {
+			$msg = 'No entries were loaded';
+		}
+
+		cerber_admin_message( $msg );
+
+		return;
+	}
+
+	// Import from a file
 	$ok = true;
 	if ( ! is_uploaded_file( $_FILES['ifile']['tmp_name'] ) ) {
 		cerber_admin_notice( __( 'No file was uploaded or file is corrupted', 'wp-cerber' ) );
@@ -757,10 +834,7 @@ function cerber_manage_diag_log( $v ) {
 		cerber_truncate_log( 0 );
 	}
     elseif ( $v == 'download' ) {
-		header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK' );
-		header( "Content-type: application/force-download" );
-		header( "Content-Type: application/octet-stream" );
-		header( "Content-Disposition: attachment; filename=wpcerber.log" );
+		crb_file_headers( 'wpcerber.log' );
 		readfile( cerber_get_diag_log() );
 		exit;
 	}

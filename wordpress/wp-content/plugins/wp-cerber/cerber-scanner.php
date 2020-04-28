@@ -796,7 +796,7 @@ function cerber_apply_scan_policies() {
 
 			if ( $delete ) {
 			    $update = true;
-				$result = cerber_quarantine_file( 'move', $file_name, $scan['id'] );
+				$result = cerber_quarantine_file( $file_name, $scan['id'] );
 				if ( is_wp_error( $result ) ) {
 					cerber_log_scan_error( $result->get_error_message() );
 					$issue['data']['prced'] = CERBER_FDUN;
@@ -869,7 +869,7 @@ function cerber_recover_files( $package_type ) {
 				continue;
 			}
 
-			cerber_quarantine_file( 'copy', $file_name, $scan['id'] );
+			cerber_quarantine_file( $file_name, $scan['id'], false );
 
 			if ( ! @copy( $source_file, $file_name ) ) {
 				$err = error_get_last();
@@ -1330,12 +1330,10 @@ function cerber_push_issues( $section, $issues = array(), $container = '', $sec_
 			// Can the file be deleted safely?
 
 			$allowed = 0;
-			if ( $file['file_type'] != CERBER_FT_CONF ) {
-				if ( ! empty( $file['fd_allowed'] ) ) {
-					if ( cerber_can_be_deleted( $file['file_name'] ) ) {
-						$allowed = 1;
-					}
-				}
+			if ( $file['file_type'] != CERBER_FT_CONF
+			     && ! empty( $file['fd_allowed'] )
+			     && true === cerber_can_be_deleted( $file['file_name'] ) ) {
+				$allowed = 1;
 			}
 
 			$data['fd_allowed'] = $allowed;
@@ -1851,7 +1849,7 @@ function cerber_verify_plugin( $plugin_folder, $plugin_data ) {
 
 		$hash_url = null;
 
-		if ( in_array( $plugin_folder, array( 'wp-cerber', 'wp-cerber-buddypress', 'wp-cerber-cloudflare-addon' ) ) ) {
+		if ( in_array( $plugin_folder, array( 'wp-cerber', 'wp-cerber-buddypress', 'wp-cerber-cloudflare-addon', 'jetflow' ) ) ) {
 			$hash_url = 'https://my.wpcerber.com/downloads/checksums/' . $plugin_folder . '/' . $plugin_data['Version'] . '.json';
 		}
 
@@ -3575,17 +3573,28 @@ function cerber_scan_directory( $root, $pattern = null, $function ) {
 
 	// Must be excluded
 	if ( $exclude === null ) {
-		$exclude = crb_get_settings( 'scan_exclude' );
-		if ( ! $exclude ) {
-			$exclude = array();
+		$list = crb_get_settings( 'scan_exclude' );
+		if ( ! $list || ! is_array( $list ) ) {
+			$list = array();
 		}
+
 		$d = cerber_get_the_folder();
 		if ( is_dir( $d ) ) {
-			$exclude[] = $d;
+			$list[] = $d;
 		}
-		$exclude   = array_map( function ( $item ) {
+
+		$exclude = array();
+		foreach ( $list as $dir ) {
+			if ( ! is_dir( $dir ) ) {
+				continue;
+			}
+
+			$exclude[] = rtrim( $dir, '/\\' );
+		}
+
+		/*$exclude   = array_map( function ( $item ) {
 			return rtrim( $item, '/\\' );
-		}, $exclude );
+		}, $exclude );*/
 	}
 
 	if ( ! $pattern ) {
@@ -4242,6 +4251,8 @@ function cerber_need_for_hash( $zip_file = '', $delete = true, $expires = 0 ) {
 	$tmp_folder1 = $folder . 'zip' . DIRECTORY_SEPARATOR;
 	$tmp_folder2 = $folder . 'nested_zip' . DIRECTORY_SEPARATOR;
 
+	crb_raise_limits();
+
 	if ( ! $zip_file ) {
 		if ( ! $files = glob( $folder . '*.zip' ) ) {
 			return false;
@@ -4514,6 +4525,32 @@ function cerber_lock_the_folder( $folder ) {
 
 			return true;
 		}
+	}
+
+	return false;
+}
+
+/**
+ * @param $file
+ * @since 8.6.1
+ *
+ * @return bool
+ */
+function cerber_set_writable( $file ) {
+	static $chmod_file, $chmod_dir;
+
+	if ( ! $chmod_file ) {
+		$chmod_file = ( fileperms( ABSPATH . 'index.php' ) & 0777 | 0644 );
+	}
+	if ( ! $chmod_dir ) {
+		$chmod_dir = ( fileperms( ABSPATH ) & 0777 | 0755 );
+	}
+
+	if ( @is_file( $file ) ) {
+		return @chmod( $file, $chmod_file );
+	}
+    elseif ( @is_dir( $file ) ) {
+		return @chmod( $file, $chmod_dir );
 	}
 
 	return false;
@@ -4898,7 +4935,7 @@ add_action( 'wp_ajax_cerber_scan_bulk_files', function () {
 
 		switch ( $operation ) {
 			case 'delete_file':
-				$result = cerber_quarantine_file( 'move', $file_name, $scan_id );
+				$result = cerber_quarantine_file( $file_name, $scan_id );
 				break;
 			case 'ignore_add_file':
 				$ignore[ $the_file->file_name_hash ] = array(
@@ -4949,21 +4986,28 @@ add_action( 'wp_ajax_cerber_scan_bulk_files', function () {
 /**
  * Move files to the quarantine folder
  *
- * @param $action string 'move' or 'copy'
  * @param string $file_name
  * @param integer $scan_id
+ * @param bool $move true to delete the file in its original location @since 8.6.1
  *
  * @return bool|WP_Error
  */
-function cerber_quarantine_file( $action, $file_name, $scan_id ) {
+function cerber_quarantine_file( $file_name, $scan_id, $move = true ) {
 	static $folder;
 
 	$scan_id = absint( $scan_id );
+
 	if ( ! is_file( $file_name ) || ! $scan_id ) {
 		return false;
 	}
-	if ( $action == 'move' && ! cerber_can_be_deleted( $file_name, true ) ) {
-		return new WP_Error( 'cerber-del', "This file can't be deleted: ". $file_name );
+
+	if ( $move ) {
+		$can = cerber_can_be_deleted( $file_name, true );
+
+		if ( is_wp_error( $can ) ) {
+			return $can;
+			//return new WP_Error( 'cerber-del', "This file can't be deleted: " . $file_name );
+		}
 	}
 
 	if ( $folder === null ) {
@@ -5000,7 +5044,8 @@ function cerber_quarantine_file( $action, $file_name, $scan_id ) {
 		fwrite( $f, 'Information for restoring files.' . PHP_EOL
 		            . 'Deletion date | Deleted file => Original file to copy to restore.' . PHP_EOL
 		            . '-----------------------------------------------------------------'
-		            . PHP_EOL . `` );
+		            //. PHP_EOL . `` );
+		            . PHP_EOL );
 	}
 	else {
 		if ( ! $f = fopen( $restore, 'a' ) ) {
@@ -5018,15 +5063,17 @@ function cerber_quarantine_file( $action, $file_name, $scan_id ) {
 		}
 	}
 
-	if ( $action == 'move' ) {
-		if ( ! @rename( $file_name, $new_name ) ) {
-			return new WP_Error( 'cerber-quar', 'Unable to move file to the quarantine: ' . $file_name . '. Check the file folder permissions.' );
+	if ( ! crb_move_copy( $file_name, $new_name, $move ) ) {
+		$dir = dirname( $file_name );
+
+		if ( $move ) {
+			$msg = 'Unable to move file to the quarantine: ' . $file_name . '. Check permissions (owner) of this folder: ' . $dir;
 		}
-	}
-	else {
-		if ( ! @copy( $file_name, $new_name ) ) {
-			return new WP_Error( 'cerber-quar', 'Unable to copy file to the quarantine: ' . $file_name . '. Check the file folder permissions.' );
+		else {
+			$msg = 'Unable to copy file to the quarantine: ' . $file_name . '. Check permissions (owner) of this folder: ' . $dir;
 		}
+
+		return new WP_Error( 'cerber-quar-fail', $msg );
 	}
 
 	// Save restoring info
@@ -5036,41 +5083,74 @@ function cerber_quarantine_file( $action, $file_name, $scan_id ) {
 	return true;
 }
 
+// @since 8.6.1
+function crb_move_copy( $file_name, $new_name, $move = true ) {
+	$abort = false;
+	do {
+		if ( $move ) {
+			$ok = @rename( $file_name, $new_name );
+		}
+		else {
+			$ok = @copy( $file_name, $new_name );
+		}
+
+		if ( $ok ) {
+			return true;
+		}
+
+		if ( $abort ) {
+			return false;
+		}
+
+		if ( ! crb_get_settings( 'scan_chmod' ) ) {
+			return false;
+		}
+
+		cerber_set_writable( dirname( $file_name ) );
+		cerber_set_writable( $file_name );
+		$abort = true;
+
+	} while ( true );
+}
+
 /**
- * Some files can't be deleted...
+ * Some files cannot be deleted
  *
  * @param $file_name
  * @param bool $check_inclusion
  *
- * @return bool
+ * @return true|WP_Error true if a file can be safely deleted
  */
 function cerber_can_be_deleted( $file_name, $check_inclusion = false ) {
-	static $abspath;
 
 	if ( ! file_exists( $file_name ) || ! is_file( $file_name ) || is_link( $file_name ) ) {
-		return false;
+		return new WP_Error( 'cerber_no_file', 'This file cannot be deleted because it doesn\'t exist: ' . $file_name );
+		//return false;
 	}
 
 	if ( cerber_is_htaccess( $file_name ) || cerber_is_dropin( $file_name ) ) {
-		return false;
+		return new WP_Error( 'cerber_file_not_allowed', 'This file is not allowed to be deleted: ' . $file_name );
+		//return false;
 	}
 
 	if ( $check_inclusion && in_array( $file_name, get_included_files() ) ) {
-		return false;
+		return new WP_Error( 'cerber_file_active', 'This file cannot be deleted because it \'s loaded and in use: ' . $file_name );
+		//return false;
 	}
 
 	if ( basename( $file_name ) == 'wp-config.php' ) {
-		if ( $abspath !== null ) {
-			$abspath = cerber_get_abspath();
-		}
+		$abspath = cerber_get_abspath();
 		$file_name = cerber_normal_path( $file_name );
 
-		if ( $file_name == $abspath . 'wp-config.php' ) {
-			return false;
+		if ( ( $file_name == $abspath . 'wp-config.php' )
+		     || ( ! file_exists( $abspath . 'wp-config.php' ) && $file_name == dirname( $abspath ) . DIRECTORY_SEPARATOR . 'wp-config.php' ) ) {
+
+			return new WP_Error( 'cerber_file_not_allowed', 'This file is not allowed to be deleted: ' . $file_name );
+			//return false;
 		}
-		if ( ! file_exists( $abspath . 'wp-config.php' ) && $file_name == dirname( $abspath ) . DIRECTORY_SEPARATOR . 'wp-config.php' ) {
+		/*if ( ! file_exists( $abspath . 'wp-config.php' ) && $file_name == dirname( $abspath ) . DIRECTORY_SEPARATOR . 'wp-config.php' ) {
 			return false;
-		}
+		}*/
 	}
 
 	return true;
@@ -5147,24 +5227,6 @@ function cerber_is_cloud_request() {
 
     return $ret;
 }
-
-
-// TODO: !debug, remove from production!
-/*
-add_action( 'init', function () {
-	if ( ! empty( $_GET['scan-report'] ) && is_user_logged_in() ) {
-		$scan   = cerber_get_scan();
-		$report = cerber_scan_report( $scan );
-		if ( ! $report ) {
-			echo 'Nothing to report';
-		}
-		echo $report;
-		print_r($scan);
-		//cerber_send_email( 'scan', $report );
-		die();
-	}
-} );
-*/
 
 /**
  * Creates a user report

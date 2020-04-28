@@ -4,7 +4,7 @@ Tags: security, malware scanner, antispam, firewall, limit login attempts, custo
 Requires at least: 4.9
 Requires PHP: 5.6
 Tested up to: 5.4
-Stable tag: 8.6
+Stable tag: 8.6.3
 License: GPLv2
 
 Protection against hacker attacks and bots. Malware scanner & integrity checker. User activity log. Antispam reCAPTCHA. Limit login attempts.
@@ -329,6 +329,13 @@ To get access to your dashboard you need to copy the WP Cerber Reset folder to t
 
 
 == Changelog ==
+= 8.6.3 =
+* New: Ability to load IP access list's entries in the CSV format (bulk load).
+* Update: A new malware scanner setting allows you to permit the scanner to change permissions of folders and files when required.
+* Fixed: The access list IPv4 wildcard *.*.*.* doesn’t work (has no effect).
+* Fixed: If the anti-spam query whitelist contains more than one entry, they do not work as expected.
+* Fixed: Several settings fields are not properly escaped.
+* [Read more](https://wpcerber.com/wp-cerber-security-8-6-3/)
 
 = 8.6 =
 * New: [An integration with the Cloudflare cloud-based firewall. It’s implemented as a special WP Cerber add-on.](https://wpcerber.com/cloudflare-add-on-wp-cerber/)

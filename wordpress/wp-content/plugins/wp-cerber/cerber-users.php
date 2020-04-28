@@ -354,6 +354,7 @@ function crb_admin_role_form( $role_id, $values ) {
 }
 
 function crb_admin_form_field( $field, $name, $value, $id = '' ) {
+	$value = crb_attr_escape( $value );
 	$label = crb_array_get( $field, 'label' );
 	if ( ! $id ) {
 		$id = 'crb-input-' . $name;
@@ -385,7 +386,7 @@ function crb_admin_form_field( $field, $name, $value, $id = '' ) {
 			$type = crb_array_get( $field, 'type', 'text' );
 
 			//return $pre . '<input type="' . $type . '" id="' . $id . '" name="' . $name . '" value="' . $value . '"' . $atts . ' class="' . $class . '" ' . $size . $maxlength . $atts . $data . ' />';
-			return '<input style="'.$style.'" type="' . $type . '" id="' . $id . '" name="' . $name . '" value="' . $value . '" ' . $atts . ' />';
+			return '<input style="' . $style . '" type="' . $type . '" id="' . $id . '" name="' . $name . '" value="' . $value . '" ' . $atts . ' />';
 			break;
 	}
 }

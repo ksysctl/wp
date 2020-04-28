@@ -3451,145 +3451,146 @@ msgstr "Cookies"
 
 #: ../dashboard.php:71
 msgid "Cerber anti-spam settings"
-msgstr ""
+msgstr "Cerber anti-spam-instellingen"
 
 #: ../dashboard.php:71 ../settings.php:1106
 msgid "Anti-spam"
-msgstr ""
+msgstr "Anti-spam"
 
 #: ../dashboard.php:79 ../dashboard.php:79 ../cerber-addons.php:289
 msgid "Add-ons"
-msgstr ""
+msgstr "Add-ons"
 
 #: ../dashboard.php:4602
 msgid "Anti-spam and bot detection settings"
-msgstr ""
+msgstr "Anti-spam- en botdetectie-instellingen"
 
 #: ../dashboard.php:4604
 msgid "Anti-spam engine"
-msgstr ""
+msgstr "Anti-spamroutine"
 
 #: ../common.php:1425
 msgid "Multiple erroneous requests"
-msgstr ""
+msgstr "Meervoudige foutieve verzoeken"
 
 #: ../admin/cerber-settings.php:347
 msgid "%s retries are allowed within %s minutes"
-msgstr ""
+msgstr "%s herkansingen in %s minuten toegestaan"
 
 #: ../admin/cerber-settings.php:353
 msgid "%s registrations are allowed within %s minutes from one IP address"
-msgstr ""
+msgstr "%s registraties binnen %s minuten vanaf één IP-adres toegestaan"
 
 #: ../admin/cerber-settings.php:376
 msgid "Enable after %s failed login attempts in the last %s minutes"
-msgstr ""
+msgstr "Aanzetten na %s gefaalde inlogpogingen in de afgelopen %s minuten"
 
 #: ../settings.php:142
 msgid "Limit"
-msgstr ""
+msgstr "Limiet"
 
 #: ../settings.php:360
 msgid "Restrict or completely block access to the WordPress REST API according to your needs"
-msgstr ""
+msgstr "Naar behoefte toegang tot de WordPress REST API beperken of blokkeren"
 
 #: ../settings.php:575
 msgid "These features help your organization to be in compliance with personal data protection laws"
-msgstr ""
+msgstr "Deze functies helpen u de privacywetgeving na te leven"
 
 #: ../settings.php:633
 msgid "if empty, the website administrator email %s will be used"
-msgstr ""
+msgstr "indien leeg, wordt de email %s van de sitebeheerder gebruikt"
 
 #: ../settings.php:637
 msgid "notifications are allowed per hour (0 means unlimited)"
-msgstr ""
+msgstr "meldingen per uur toegestaan (0 = onbeperkt)"
 
 #: ../settings.php:649
 msgid "Get notified instantly with mobile and desktop notifications"
-msgstr ""
+msgstr "Meteen op de hoogte met desktop- en mobiele meldingen"
 
 #: ../settings.php:664
 msgid "Weekly report is a summary of all activities and suspicious events occurred during the last seven days"
-msgstr ""
+msgstr "Het weekrapport is een overzicht van activiteiten en verdachte gebeurtenissen van de afgelopen zeven dagen"
 
 #: ../settings.php:677 ../settings.php:916
 msgid "if empty, the email addresses from the notification settings will be used"
-msgstr ""
+msgstr "indien leeg, worden de mailadressen voor meldingen gebruikt"
 
 #: ../settings.php:689
 msgid "Traffic Inspector is a context-aware web application firewall (WAF) that protects your website by recognizing and denying malicious HTTP requests"
-msgstr ""
+msgstr "VerkeerInspectie beschermt als contextuele WebApplicatie Firewall (WAF) de website door kwaadaardige HTTP-verzoeken te herkennen en te weigeren\n"
+""
 
 #: ../settings.php:718
 msgid "Block IP addresses that send excessive requests for non-existing pages or scan website for security breaches"
-msgstr ""
+msgstr "Blokkeer IP-adressen die extreem veel niet-bestaande pagina's opvragen of die scannen voor beveiligingslekken"
 
 #: ../settings.php:737
 msgid "Traffic Logging"
-msgstr ""
+msgstr "Verkeer Loggen"
 
 #: ../settings.php:738
 msgid "Enable optional traffic logging if you need to monitor suspicious and malicious activity or solve security issues"
-msgstr ""
+msgstr "Ga het verkeer loggen als je verdachte of kwaadaardige activiteiten wilt volgen, of beveiligingsproblemen wilt oplossen"
 
 #: ../settings.php:802
 msgid "The scanner monitors file changes, verifies the integrity of WordPress, plugins, and themes, and detects malware"
-msgstr ""
+msgstr "De scanner ziet bestandswijzigingen, controleert de integriteit van WordPress, plugins en thema's, en detecteert malware"
 
 #: ../settings.php:824
 msgid "Specify directories to exclude from scanning. One directory per line."
-msgstr ""
+msgstr "Stel de mappen in die niet gescand worden. Eén map per regel."
 
 #: ../settings.php:868
 msgid "The scanner automatically scans the website, removes malware and sends email reports with the results of a scan"
-msgstr ""
+msgstr "De scanner scant de site automatisch, verwijdert malware en mailt de resultaten van de scan"
 
 #: ../settings.php:885
 msgid "Configure what issues to include in the email report and the condition for sending reports"
-msgstr ""
+msgstr "Instellen wat deel moet uitmaken van de email-rapportage, en waarom deze verzonden wordt"
 
 #: ../settings.php:927
 msgid "These policies are automatically enforced at the end of every scheduled scan based on its results. All affected files are moved to the quarantine"
-msgstr ""
+msgstr "Deze maatregelen worden automatisch toegepast na elke scan, afhankelijk van de scan-resultaten. Getroffen bestanden gaan naar quarantaine"
 
 #: ../settings.php:993
 msgid "Cerber anti-spam engine"
-msgstr ""
+msgstr "Cerber anti-spam-routines"
 
 #: ../settings.php:994
 msgid "Spam protection for comment, registration and contact forms on a website"
-msgstr ""
+msgstr "Spambescherming voor registratie-, opmerkingen- en contactformulieren op de site"
 
 #: ../settings.php:1015
 msgid "Adjust anti-spam engine"
-msgstr ""
+msgstr "Anti-spam-routine instellen"
 
 #: ../settings.php:1016
 msgid "These settings enable you to fine-tune the behavior of anti-spam algorithms and avoid false positives"
-msgstr ""
+msgstr "Met deze instellingen stel je de anti-spam algoritmes precies in, en voorkom je valse meldingen"
 
 #: ../settings.php:1040
 msgid "How the plugin processes comments submitted through the standard comment form"
-msgstr ""
+msgstr "Hoe de plugin opmerkingen verwerkt die binnenkomen via het opmerkingenformulier"
 
 #: ../nexus/cerber-nexus-slave.php:451
 msgid "Settings updated"
-msgstr ""
+msgstr "Instellingen aangepast"
 
 #: ../dashboard.php:1151
 msgid "Request ID"
-msgstr ""
+msgstr "ID van verzoek"
 
 #: ../dashboard.php:1152
 msgid "Search in URL"
-msgstr ""
+msgstr "Zoek in URL"
 
 #: ../settings.php:831 ../settings.php:840
 msgid "Executable files"
-msgstr ""
+msgstr "Uitvoerbare bestanden"
 
 #: ../settings.php:832 ../settings.php:841
 msgid "All files"
-msgstr ""
+msgstr "Alle bestanden"
 

@@ -800,11 +800,6 @@ function get_wp_cerber(){
 	return $the_wp_cerber;
 }
 
-/**
- *
- * Initialize Cerber Security
- *
- */
 add_action( 'plugins_loaded', function () {
 
 	cerber_error_control();
@@ -813,9 +808,13 @@ add_action( 'plugins_loaded', function () {
 
 	cerber_inspect_uploads(); // Uploads in the dashboard
 
-	cerber_init_cron();
+	//cerber_init_cron(); @since 8.6.1 moved to cerber_bg_launcher
 
-	__('> > > Translator of WP Cerber? To get the PRO license for free, drop your contacts here: https://wpcerber.com/contact/','wp-cerber');
+	if ( ! wp_next_scheduled( 'cerber_bg_launcher' ) ) {
+		wp_schedule_event( time(), 'crb_five', 'cerber_bg_launcher' );
+	}
+
+	__( '> > > Translator of WP Cerber? To get the PRO license for free, drop your contacts here: https://wpcerber.com/contact/', 'wp-cerber' );
 
 }, 1000 );
 
@@ -1330,11 +1329,11 @@ function crb_update_session_data( $user_id, $sessions = null ) {
 	}
 
 	foreach ( $new as $id ) {
-		$data = $sessions[ $id ];
+		$data       = $sessions[ $id ];
 		$session_id = get_wp_cerber()->getRequestID();
 		$ip         = $data['ip'];
 		//$ip = cerber_get_remote_ip();
-		$country    = (string) lab_get_country( $ip );
+		$country = (string) lab_get_country( $ip );
 		cerber_db_query( 'INSERT INTO ' . $table . ' (user_id, ip, country, started, expires, session_id, wp_session_token) VALUES (' . $user_id . ',"' . $ip . '","' . $country . '","' . $data['login'] . '","' . $data['expiration'] . '","' . $session_id . '","' . $id . '")' );
 	}
 
@@ -2930,7 +2929,7 @@ function cerber_block_add( $ip_address = '', $reason_id = 1, $details = '', $dur
 	}
 
 	if ( crb_get_settings( 'subnet' ) ) {
-		$ip       = cerber_get_subnet( $ip_address );
+		$ip       = cerber_get_subnet_ipv4( $ip_address );
 		$activity = 11;
 	}
 	else {
@@ -3029,7 +3028,7 @@ function cerber_get_block( $ip = '' ) {
 	$where = ' WHERE ip = "' . $ip . '"';
 
 	if ( cerber_is_ipv4( $ip ) ) {
-		$subnet = cerber_get_subnet( $ip );
+		$subnet = cerber_get_subnet_ipv4( $ip );
 		$where  .= ' OR ip = "' . $subnet . '"';
 	}
 
@@ -3536,7 +3535,7 @@ function cerber_file_log( $user_login, $ip ) {
 /*
 	Return wildcard - string like subnet Class C
 */
-function cerber_get_subnet( $ip ) {
+function cerber_get_subnet_ipv4( $ip ) {
 	return preg_replace( '/\.\d{1,3}$/', '.*', $ip );
 }
 
@@ -3580,11 +3579,12 @@ function cerber_is_ip_or_net( $ip ) {
 }
 
 /**
- * Tries to recognize an IP range (with a dash) in a given string.
+ * Tries to recognize a valid IP range (with a dash) in a given string.
+ * Supports IPv4 & IPv6
  *
- * @param string $string String to look for an IP addresses in
+ * @param string $string String to detect for an IP range
  *
- * @return array|bool|string Return IP range as an array if it was found.
+ * @return array|bool|string Return IP range as an array for a valid range, string in case of a single IP, false otherwise
  */
 function cerber_parse_ip_range( $string ) {
 
@@ -3618,7 +3618,16 @@ function cerber_parse_ip_range( $string ) {
     elseif ( cerber_is_ipv6( $begin_ip ) && cerber_is_ipv6( $end_ip ) ) {
 		$ver6 = 1;
 		list( $begin, $end, $v6range ) = crb_ipv6_prepare( $begin_ip, $end_ip );
-	}
+
+	    // @since 8.6.1 check for a valid IPv6 range: begin < end
+	    if ( $begin > $end ) {
+		    return false;
+	    }
+	    list( $begin1, $begin2, $end1, $end2 ) = explode( '#', $v6range, 4 );
+	    if ( crb_compare_numbers( $begin1, $begin2, $end1, $end2 ) ) {
+		    return false;
+	    }
+    }
 	else {
 		return false;
 	}
@@ -3642,12 +3651,13 @@ function cerber_parse_ip_range( $string ) {
  * @return array|bool|string False if no wildcard found, otherwise result of cerber_parse_ip()
  */
 function cerber_wildcard2range( $wildcard ) {
-	if ( ! strpos( $wildcard, '*' ) ) {
+	if ( false === strpos( $wildcard, '*' ) ) {
 		return false;
 	}
+
 	if ( ! strpos( $wildcard, ':' ) ) {
-		$begin = str_replace( '.*', '.0', $wildcard );
-		$end   = str_replace( '.*', '.255', $wildcard );
+		$begin = str_replace( '*', '0', $wildcard );
+		$end   = str_replace( '*', '255', $wildcard );
 		if ( ! cerber_is_ipv4( $begin ) || ! cerber_is_ipv4( $end ) ) {
 			return false;
 		}
@@ -3698,14 +3708,26 @@ function cerber_cidr2range( $cidr = '' ) {
 }
 
 /**
- * Try to recognize an IP range or a single IP in a string.
+ * Tries to recognize if a given string contains an IP range/CIDR/wildcard
+ * Supports IPv4 & IPv6
  *
- * @param $string string  Network wildcard, CIDR or IP range.
+ * If returns false, there is no IP in the string in any form
  *
- * @return array|bool|string
+ * @param $string string Anything
+ *
+ * @return array|string Return an array if an IP range recognized, string with IP in case of a single IP, false otherwise
  */
 function cerber_any2range( $string ) {
+	if ( ! $string
+	     || ! is_string( $string ) ) {
+		return false;
+	}
+
 	$string = trim( $string );
+
+	if ( filter_var( $string, FILTER_VALIDATE_IP ) ) {
+		return $string;
+	}
 
 	// Do not change the order!
 	$ret = cerber_wildcard2range( $string );
@@ -3835,7 +3857,7 @@ function cerber_is_myip( $ip ) {
 	if ( $ip == $remote_ip ) {
 		return true;
 	}
-	if ( $ip == cerber_get_subnet( $remote_ip ) ) {
+	if ( $ip == cerber_get_subnet_ipv4( $remote_ip ) ) {
 		return true;
 	}
 
@@ -4357,26 +4379,6 @@ add_filter( 'cron_schedules', function ( $schedules ) {
 	return $schedules;
 } );
 
-function cerber_init_cron(){
-	$next_hour = intval( floor( ( time() + 3600 ) / 3600 ) * 3600 );
-
-	if ( ! wp_next_scheduled( 'cerber_bg_launcher' ) ) {
-		wp_schedule_event( time(), 'crb_five', 'cerber_bg_launcher' );
-	}
-
-	if ( ! wp_next_scheduled( 'cerber_hourly_1' ) ) {
-		wp_schedule_event( $next_hour, 'hourly', 'cerber_hourly_1' );
-	}
-
-	if ( ! wp_next_scheduled( 'cerber_hourly_2' ) ) {
-		wp_schedule_event( $next_hour + 600 , 'hourly', 'cerber_hourly_2' );
-	}
-
-	if ( ! wp_next_scheduled( 'cerber_daily' ) ) {
-		wp_schedule_event( $next_hour + 1200, 'daily', 'cerber_daily' );
-	}
-}
-
 add_action( 'cerber_hourly_1', 'cerber_do_hourly' );
 function cerber_do_hourly( $force = false ) {
 
@@ -4570,14 +4572,36 @@ function cerber_do_daily() {
 	set_site_transient( $t, array( $start, time() ), 48 * 3600 );
 }
 
+/**
+ * Master CRON task scheduler
+ *
+ */
 add_action( 'cerber_bg_launcher', function () {
+	$next_hour = intval( floor( ( time() + 3600 ) / 3600 ) * 3600 );
+
+	if ( ! wp_next_scheduled( 'cerber_hourly_1' ) ) {
+		wp_schedule_event( $next_hour, 'hourly', 'cerber_hourly_1' );
+	}
+
+	if ( ! wp_next_scheduled( 'cerber_hourly_2' ) ) {
+		wp_schedule_event( $next_hour + 600 , 'hourly', 'cerber_hourly_2' );
+	}
+
+	if ( ! wp_next_scheduled( 'cerber_daily' ) ) {
+		wp_schedule_event( $next_hour + 1200, 'daily', 'cerber_daily' );
+	}
+
 	define( 'CRB_DOING_BG_TASK', 1 );
-	@set_time_limit( 180 );
-	@ini_set( 'max_execution_time', 180 );
+
+	@ignore_user_abort( true );
+	crb_raise_limits();
+
 	if ( nexus_is_master() ) {
 		nexus_schedule_refresh();
 	}
+
 	cerber_bg_task_launcher();
+
 } );
 
 function cerber_bg_task_launcher( $filter = null ) {
@@ -5088,6 +5112,7 @@ register_activation_hook( cerber_plugin_file(), function () {
 	}
 
 	$db_errors = cerber_create_db();
+
 	if ( $db_errors ) {
 		$e = '';
 		foreach ( $db_errors as $db_error ) {
@@ -5101,10 +5126,24 @@ register_activation_hook( cerber_plugin_file(), function () {
 	cerber_upgrade_all( true );
 
 	cerber_cookie_one();
-	cerber_disable_citadel();
 
 	cerber_load_admin_code();
-	cerber_add_white( cerber_get_subnet( cerber_get_remote_ip() ) , 'My subnet' ); // Protection for non-experienced user
+
+	if ( is_user_logged_in() ) {  // Not for remote plugin installation/activation
+
+		$ip  = cerber_get_remote_ip();
+		$sub = cerber_get_subnet_ipv4( $ip );
+
+		if ( cerber_get_block( $ip ) ) {
+			if ( ! cerber_block_delete( $ip ) ) {
+				cerber_block_delete( $sub );
+			}
+		}
+
+		cerber_add_white( $sub, 'My Subnet' ); // Protection for non-experienced users
+
+        cerber_disable_citadel();
+	}
 
 	cerber_htaccess_sync( 'main' );
 	cerber_htaccess_sync( 'media' );
@@ -5196,10 +5235,17 @@ function cerber_upgrade_all( $force = false ) {
 	global $cerber_doing_upgrade;
 	$ver = get_site_option( '_cerber_up' );
 	if ( $force || ! $ver || $ver['v'] != CERBER_VER ) {
-		$d = @ini_get( 'display_errors');
+
+	    $d = @ini_get( 'display_errors');
 		@ini_set( 'display_errors', 0 );
+
+		@ignore_user_abort( true );
+
+		crb_raise_limits();
+
 		$cerber_doing_upgrade = true;
 		@define( 'CRB_DOING_UPGRADE', 1 );
+
 		crb_clear_admin_msg();
 		cerber_create_db();
 		cerber_upgrade_db();
@@ -5218,6 +5264,7 @@ function cerber_upgrade_all( $force = false ) {
 		lab_get_key( true );
 		$cerber_doing_upgrade = false;
 		delete_site_transient( 'update_plugins' );
+
 		@ini_set( 'display_errors', $d );
 	}
 }
@@ -5594,27 +5641,33 @@ function cerber_acl_fixer() {
 	}
 
 	foreach ( $ips as $ip ) {
-		if ( cerber_is_ipv4( $ip ) ) {
-			$range = cerber_any2range( $ip );
-			if ( is_array( $range ) ) {
-				$begin = $range['begin'];
-				$end   = $range['end'];
-			}
-			else {
-				$begin = ip2long( $ip );
-				$end   = ip2long( $ip );
-			}
 
-			$set = 'ip_long_begin = ' . $begin . ', ip_long_end = ' . $end . ' WHERE ip = "' . $ip . '"';
+	    // Code from cerber_acl_add()
+
+		$v6range = '';
+		$ver6 = 0;
+
+		if ( cerber_is_ipv4( $ip ) ) {
+			$begin = ip2long( $ip );
+			$end   = ip2long( $ip );
 		}
         elseif ( cerber_is_ipv6( $ip ) ) {
-	        list( $begin, $end, $v6range ) = crb_ipv6_prepare( $ip, $ip );
-
-			$set = 'ver6 = 1, ip_long_begin = ' . $begin . ', ip_long_end = ' . $end . ', v6range = "' . $v6range . '" WHERE ip = "' . $ip . '"';
+			$ip = cerber_ipv6_short( $ip );
+			list( $begin, $end, $v6range ) = crb_ipv6_prepare( $ip, $ip );
+			$ver6 = 1;
+		}
+        elseif ( ( $range = cerber_any2range( $ip ) )
+		         && is_array( $range ) ) {
+			$ver6    = $range['IPV6'];
+			$begin   = $range['begin'];
+			$end     = $range['end'];
+			$v6range = $range['IPV6range'];
 		}
 		else {
 			continue;
 		}
+
+		$set = 'ip_long_begin = ' . $begin . ', ip_long_end = ' . $end . ', ver6 = ' . $ver6 . ', v6range = "' . $v6range . '"  WHERE ip = "' . $ip . '"';
 
 		cerber_db_query( 'UPDATE ' . CERBER_ACL_TABLE . ' SET ' . $set );
 	}

@@ -142,10 +142,10 @@ function cerber_settings_config( $args = array() ) {
 					'title' => __( 'Limit', 'wp-cerber' ),
 					'type'  => 'attempts',
 				),
-				'lockout'    => array(
+				'lockout' => array(
+					'type'  => 'digits',
 					'title' => __( 'Lockout duration', 'wp-cerber' ),
 					'label' => __( 'minutes', 'wp-cerber' ),
-					'size'  => 3,
 				),
 				'aggressive' => array(
 					'title' => __( 'Aggressive lockout', 'wp-cerber' ),
@@ -233,21 +233,21 @@ function cerber_settings_config( $args = array() ) {
 			'name' => __( 'Citadel mode', 'wp-cerber' ),
 			'desc' => __( 'In the Citadel mode nobody is able to log in except IPs from the White IP Access List. Active user sessions will not be affected.', 'wp-cerber' ),
 			'fields' => array(
-				'citadel_on'      => array(
+				'citadel_on' => array(
 					'title'   => __( 'Enable authentication log monitoring', 'wp-cerber' ),
 					//'doclink' => 'https://wpcerber.com/only-logged-in-wordpress-users/',
 					'type'    => 'checkbox',
 					'default' => 0,
 				),
 				'citadel'    => array(
-					'title' => __( 'Threshold', 'wp-cerber' ),
-					'type'  => 'citadel',
+					'title'   => __( 'Threshold', 'wp-cerber' ),
+					'type'    => 'citadel',
 					'enabler' => array( 'citadel_on' ),
 				),
 				'ciduration' => array(
-					'title' => __( 'Duration', 'wp-cerber' ),
-					'label' => __( 'minutes', 'wp-cerber' ),
-					'size'  => 3,
+					'title'   => __( 'Duration', 'wp-cerber' ),
+					'label'   => __( 'minutes', 'wp-cerber' ),
+					'type'    => 'digits',
 					'enabler' => array( 'citadel_on' ),
 				),
 				'cinotify'   => array(
@@ -269,13 +269,13 @@ function cerber_settings_config( $args = array() ) {
 					'title' => __( 'Keep log records of not logged in visitors for', 'wp-cerber' ),
 					'label' => __( 'days', 'wp-cerber' ),
 					//'label'  => __( 'days, not logged in visitors', 'wp-cerber' ),
-					'size'  => 3
+					'type'  => 'digits'
 				),
 				'keeplog_auth'     => array(
 					'title' => __( 'Keep log records of logged in users for', 'wp-cerber' ),
 					'label' => __( 'days', 'wp-cerber' ),
 					//'label'  => __( 'days, logged in users', 'wp-cerber' ),
-					'size'  => 3
+					'type'  => 'digits'
 				),
 				'cerberlab' => array(
 					'title'   => __( 'Cerber Lab connection', 'wp-cerber' ),
@@ -555,10 +555,10 @@ function cerber_settings_config( $args = array() ) {
 				),
 				'auth_expire' => array(
 					'title'   => __( 'User session expiration time', 'wp-cerber' ),
-					'label'   => __( 'in minutes (leave empty to use default WP value)', 'wp-cerber' ),
+					'label'   => __( 'minutes (leave empty to use the default WordPress value)', 'wp-cerber' ),
 					'default' => '',
 					'size'    => 6,
-					'type'    => 'number',
+					'type'    => 'digits',
 				),
 				'usersort'      => array(
 					'title'   => __( 'Sort users in dashboard', 'wp-cerber' ),
@@ -635,8 +635,7 @@ function cerber_settings_config( $args = array() ) {
 				'emailrate'      => array(
 					'title'   => __( 'Notification limit', 'wp-cerber' ),
 					'label'   => __( 'notifications are allowed per hour (0 means unlimited)', 'wp-cerber' ),
-					'size'    => 3,
-					'pattern' => '\d+',
+					'type'    => 'digits',
 				),
 				'notify-new-ver' => array(
 					'title' => __( 'New version is available', 'wp-cerber' ),
@@ -782,16 +781,19 @@ function cerber_settings_config( $args = array() ) {
 				'tithreshold'    => array(
 					'title' => __( 'Page generation time threshold', 'wp-cerber' ),
 					'label' => __( 'milliseconds', 'wp-cerber' ),
+					'type'  => 'digits',
 					'size'  => 4,
 				),
 				'tikeeprec'      => array(
 					'title' => __( 'Keep log records of not logged in visitors for', 'wp-cerber' ),
 					'label' => __( 'days', 'wp-cerber' ),
+					'type'  => 'digits',
 					'size'  => 4,
 				),
 				'tikeeprec_auth' => array(
 					'title' => __( 'Keep log records of logged in users for', 'wp-cerber' ),
 					'label' => __( 'days', 'wp-cerber' ),
+					'type'  => 'digits',
 					'size'  => 4,
 				),
 			),
@@ -841,6 +843,10 @@ function cerber_settings_config( $args = array() ) {
 						2 => __( 'All files', 'wp-cerber' ),
 					)
 				),
+				'scan_chmod'    => array(
+					'title' => __( 'Change file permissions when necessary', 'wp-cerber' ),
+					'type'  => 'checkbox',
+				),
 				'scan_tmp'      => array(
 					'title' => __( 'Scan temporary directory', 'wp-cerber' ),
 					'type'  => 'checkbox',
@@ -855,9 +861,8 @@ function cerber_settings_config( $args = array() ) {
 				),
 				'scan_qcleanup' => array(
 					'title' => __( 'Delete quarantined files after', 'wp-cerber' ),
-					'type'  => 'text',
+					'type'  => 'digits',
 					'label' => __( 'days', 'wp-cerber' ),
-					'size'  => 3
 				),
 
 			),
@@ -1046,10 +1051,9 @@ function cerber_settings_config( $args = array() ) {
 				),
 				'trashafter' => array(
 					'title'   => __( 'Trash spam comments', 'wp-cerber' ),
-					'type'    => 'text',
+					'type'    => 'digits',
 					'enabled' => __( 'Move spam comments to trash after' ),
 					'label'   => __( 'days', 'wp-cerber' ),
-					'size'    => 3
 				),
 			)
 		),
@@ -1508,11 +1512,12 @@ function cerber_get_defaults( $setting = null ) {
 			'ds_4opts_acl'   => 0,
 		),
 		CERBER_OPT_S => array(
-			'scan_cpt'      => '',
-			'scan_uext'     => '',
-			'scan_exclude'  => '',
+			'scan_cpt'      => array(),
+			'scan_uext'     => array(),
+			'scan_exclude'  => array(),
 			'scan_inew'     => '1',
 			'scan_imod'     => '1',
+			'scan_chmod'    => 0,
 			'scan_tmp'      => '1',
 			'scan_sess'     => '1',
 			'scan_debug'    => 0,
@@ -1763,22 +1768,29 @@ function crb_get_settings( $option = '', $purge_cache = false ) {
 
 	if ( ! isset( $united ) || $purge_cache ) {
 
-		$options   = cerber_get_setting_list();
-		$options[] = CERBER_CONFIG;
+		$options = cerber_get_setting_list();
 		$in      = '("' . implode( '","', $options ) . '")';
 		$united  = array();
 
 	    if ( is_multisite() ) {
 		    $sql = 'SELECT meta_value FROM ' . $wpdb->sitemeta . ' WHERE meta_key IN ' . $in;
+		    $sql_new = 'SELECT meta_value FROM ' . $wpdb->sitemeta . ' WHERE meta_key = "' . CERBER_CONFIG . '"';
 	    }
 	    else {
 		    $sql = 'SELECT option_value FROM ' . $wpdb->options . ' WHERE option_name IN ' . $in;
+		    $sql_new = 'SELECT option_value FROM ' . $wpdb->options . ' WHERE option_name = "' . CERBER_CONFIG . '"';
 	    }
 
 		$set = cerber_db_get_col( $sql );
 
 		if ( ! $set || ! is_array( $set ) ) {
 			return false;
+		}
+
+		$set_new = cerber_db_get_var( $sql_new );
+		
+		if ( $set_new ) {
+			array_unshift( $set, $set_new );
 		}
 
 	    foreach ( $set as $item ) {

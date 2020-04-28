@@ -1,8 +1,17 @@
+= 8.6.3 =
+* New: Ability to load IP access list's entries in the CSV format (bulk load).
+* Update: A new malware scanner setting allows you to permit the scanner to change permissions of folders and files when required.
+* Fixed: The access list IPv4 wildcard *.*.*.* doesn't work (has no effect).
+* Fixed: If the anti-spam query whitelist contains more than one entry, they do not work as expected.
+* Fixed: Several settings fields are not properly escaped.
+* [Read more](https://wpcerber.com/wp-cerber-security-8-6-3/)
+
 = 8.6 =
 * New: [An integration with the Cloudflare cloud-based firewall. It’s implemented as a special WP Cerber add-on.](https://wpcerber.com/cloudflare-add-on-wp-cerber/)
 * Update: The malware scanner has got improvements to the monitoring of new and modified files feature.
 * Update: Additional search fields for the Activity log. They enable you to find a specific request by its Request ID (RID) or/and to search for a string in the request URL.
 * Update: The minimum supported PHP version is 5.6.
+* [Read more](https://wpcerber.com/wp-cerber-security-8-6/)
 
 = 8.5.9 =
 * New: On the Live Traffic log, now you can search and filter our requests with software errors if they occurred.
@@ -31,14 +40,14 @@
 * Fixed: PHP Notice: Trying to get property "ID" of non-object in cerber-load.php on line 1131
 
 = 8.5.5 =
-* IP Access Lists now support IPv6 networks, ranges, and wildcards. Add as many IPv6 entries to the access lists as you need. We've developed an extraordinarily fast ACL engine to process them.
-* The algorithm of handling consecutive IP address lockouts has been improved: the reason for an existing lockout is updated and its duration is recalculated in real-time now.
-* Traffic inspection algorithms were optimized to reduce false positives and make algorithms more human-friendly.
-* Improved compatibility with WooCommerce: the password reset and login forms are not blocked anymore if a user’s IP gets locked out due to using a non-existing username by mistake, using a prohibited username, or if a user has exceeded the number of allowed login attempts.
-* Improved compatibility with WordPress scheduled cron tasks if a website runs on a server with PHP-FPM (FastCGI Process Manager)
-* Very long URLs on the Live Traffic page are now displayed in full when you click the "Details" link in a row.
-* The [Cerber.Hub multi-site manager](https://wpcerber.com/manage-multiple-websites/): the server column on the slave websites list page now contains a link to quickly filter out websites on the same server.
-* The [Cerber.Hub multi-site manager](https://wpcerber.com/manage-multiple-websites/): now it remembers the filtered list of slave websites while you’re switching between them and the master.
+* New: IP Access Lists now support IPv6 networks, ranges, and wildcards. Add as many IPv6 entries to the access lists as you need. We've developed an extraordinarily fast ACL engine to process them.
+* Update: The algorithm of handling consecutive IP address lockouts has been improved: the reason for an existing lockout is updated and its duration is recalculated in real-time now.
+* Update: Traffic inspection algorithms were optimized to reduce false positives and make algorithms more human-friendly.
+* Update: Improved compatibility with WooCommerce: the password reset and login forms are not blocked anymore if a user’s IP gets locked out due to using a non-existing username by mistake, using a prohibited username, or if a user has exceeded the number of allowed login attempts.
+* Update: Improved compatibility with WordPress scheduled cron tasks if a website runs on a server with PHP-FPM (FastCGI Process Manager)
+* Update: Very long URLs on the Live Traffic page are now displayed in full when you click the "Details" link in a row.
+* Update: The [Cerber.Hub multi-site manager](https://wpcerber.com/manage-multiple-websites/): the server column on the slave websites list page now contains a link to quickly filter out websites on the same server.
+* Update: The [Cerber.Hub multi-site manager](https://wpcerber.com/manage-multiple-websites/): now it remembers the filtered list of slave websites while you’re switching between them and the master.
 * Fixed: If the Custom login URL is enabled on a subfolder WordPress installation, the user redirection after logout generates the HTTP 404 error page.
 * Fixed: Very long HTTP referrers and request URLs are displayed in a truncated form on the Live Traffic page due to CSS bug.
 * Fixed: If the Data Shield security feature is active, the password reset page on WordPress 5.3 doesn’t work properly showing "Your password reset link appears to be invalid. Please request a new link below."
@@ -48,7 +57,7 @@
 * New: The malware scanner and integrity checker window has got a new filter that enables you to filter out and navigate to specific issues quickly.
 * New in Cerber.Hub: new columns and filters have been added to the list of slave websites. The new columns display server IP addresses, hostnames, and countries where servers are located.
 * Fixed: depending on the number of items in the access lists, the IP address 0.0.0.0 can be erroneously marked as whitelisted or blacklisted.
-* Fixed in Cerber.Hub: if a WordPress plugin is installed on several slave websites and the plugin needs to be updated on some of the slave websites, the plugin is shown as needs to be updated on all the slave websites.
+* Fixed in Cerber.Hub: if a WordPress plugin is installed on several slave websites and the plugin needs to be updated on some of the slave websites, the plugin is shown as needs to be updated on all of them.
 * [Read more](https://wpcerber.com/wp-cerber-security-8-5-3/)
 
 = 8.5 =

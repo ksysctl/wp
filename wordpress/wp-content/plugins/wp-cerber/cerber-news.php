@@ -86,38 +86,16 @@ function cerber_push_the_news( $version ) {
 	$news['8.5.3'][] = 'Bug fixed: depending on the number of items in the access lists, the IP address 0.0.0.0 can be erroneously marked as whitelisted or blacklisted.';
 	$news['8.5.3'][] = 'Bug fixed in Cerber.Hub: if a WordPress plugin is installed on several slave websites and the plugin needs to be updated on some of the slave websites, the plugin is shown as needs to be updated on all the slave websites.';
 
-	$news['8.5.5'][] = 'IP Access Lists now support IPv6 networks, ranges, and wildcards. Add as many IPv6 entries to the access lists as you need. We\'ve developed an extraordinarily fast ACL engine to process them.';
-	$news['8.5.5'][] = 'The algorithm of handling consecutive IP address lockouts has been improved: the reason for an existing lockout is updated and its duration is recalculated in real-time now.';
-	$news['8.5.5'][] = 'Traffic inspection algorithms were optimized to reduce false positives and make algorithms more human-friendly.';
-	$news['8.5.5'][] = 'Improved compatibility with WooCommerce: the password reset and login forms are not blocked anymore if a user’s IP gets locked out due to using a non-existing username by mistake, using a prohibited username, or if a user has exceeded the number of allowed login attempts.';
-	$news['8.5.5'][] = 'Improved compatibility with WordPress scheduled cron tasks if a website runs on a server with PHP-FPM (FastCGI Process Manager)';
-	$news['8.5.5'][] = 'Very long URLs on the Live Traffic page are now displayed in full when you click the "Details" link in a row.';
-	$news['8.5.5'][] = 'The Cerber.Hub multi-site manager: the server column on the slave websites list page now contains a link to quickly filter out websites on the same server.';
-	$news['8.5.5'][] = 'The Cerber.Hub multi-site manager: now it remembers the filtered list of slave websites while you’re switching between them and the master.';
-
-	$news['8.5.6'][] = 'Now you can separately set the number of days of keeping log records in the database for authenticated (logged in) website users and non-authenticated (not logged in) visitors. These settings are configured for the activity log and the live traffic log separately.';
-	$news['8.5.6'][] = 'You can completely turn off the Citadel mode feature in the Main Settings now.';
-	$news['8.5.6'][] = 'The appearance of the Activity log has got small visual improvements.';
-	$news['8.5.6'][] = 'When you upload a ZIP archive on the integrity scanner page it processes nested ZIP archives now and writes errors to the diagnostic log if it\'s enabled.';
-	$news['8.5.6'][] = 'Fixed: The blacklisting buttons on the Activity tab do not work showing "Incorrect IP address or IP range".';
-
-	$news['8.5.8'][] = 'A personal data export and erase feature which can be used through the WordPress personal data export and erase tool. This feature helps your organization to be in compliance with data privacy laws such as GDPR in Europe or CCPA in California';
-	$news['8.5.8'][] = 'The performance of the algorithm that handles exporting rows from the Activity log and the Live Traffic log to a CSV file has been improved enabling export larger datasets';
-	$news['8.5.8'][] = 'When you block a user you can add an optional admin note now';
-	$news['8.5.8'][] = 'Fixed: If a user is blocked, it’s not possible to update the user message';
-	$news['8.5.8'][] = 'Fixed: Depending on the logging settings the "Details" links on the Live Traffic log are not displayed in some rows';
-
-	$news['8.5.9'][] = 'On the Live Traffic log, now you can search and filter our requests with software errors if they occurred.';
-	$news['8.5.9'][] = 'The code of WP Cerber has been updated and tested to fully support and be compatible with PHP 7.4.';
-	$news['8.5.9'][] = 'The layout of the list of slave websites on the Cerber.Hub\'s main page has been improved to display the list more accurately on narrow and mobile screens.';
-	$news['8.5.9'][] = 'If a slave website has the professional version of WP Cerber, it has a PRO sign in the "WP Cerber" column. The license expiration date is shown when you hover the mouse over the sign.';
-	$news['8.5.9'][] = 'Fixed: A bug with displaying long file names in the Security Scanner Quarantine that makes unavailable deleting or restoring quarantined files manually.';
-	$news['8.5.9'][] = 'Fixed: A bug that requires installing a valid license key on a Cerber.Hub master website to permit configuring settings on slave websites remotely, which is not intended behavior.';
-
 	$news['8.6'][] = 'An integration with the Cloudflare cloud-based firewall. It’s implemented as a special WP Cerber add-on.';
 	$news['8.6'][] = 'The malware scanner has got improvements to the monitoring of new and modified files feature. Now it can be set to Disable, Executable files, or All files.';
 	$news['8.6'][] = 'Additional search fields for the Activity log. They enable you to find a specific request by its Request ID (RID) or/and to search for a string in the request URL.';
 	$news['8.6'][] = 'The minimum supported PHP version is 5.6.';
+
+	$news['8.6.3'][] = 'New: Ability to load IP access list\'s entries in the CSV format (bulk load).';
+	$news['8.6.3'][] = 'Update: A new malware scanner setting allows you to permit the scanner to change permissions of folders and files when required.';
+	$news['8.6.3'][] = 'Fixed: The access list IPv4 wildcard *.*.*.* doesn\'t work (has no effect).';
+	$news['8.6.3'][] = 'Fixed: If the anti-spam query whitelist contains more than one entry, they do not work as expected.';
+
 
 	if ( ! empty( $news[ $version ] ) ) {
 		//$text = '<h3>What\'s new in WP Cerber '.$version.'</h3>';

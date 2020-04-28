@@ -36,7 +36,10 @@ jQuery(document).ready(function ($) {
     var crb_the_file;
     var crb_row_id = 0; // For local parent -> child relationship
 
-    cerber_scan_load_data();
+    if (crb_admin_page === 'cerber-integrity'
+        && (crb_admin_tab === '' || crb_admin_tab === 'scan_main')) {
+        cerber_scan_load_data();
+    }
 
     crb_scan_controls.find(':button,a').click(function (event) {
         var operation = $(event.target).data('control');

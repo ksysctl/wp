@@ -777,6 +777,38 @@ function crb_array_diff_keys( &$arr1, &$arr2 ) {
 	return false;
 }
 
+
+/**
+ * @param string|array $val
+ *
+ * for objects see map_deep();
+ */
+function crb_trim_deep( &$val ) {
+	if ( ! is_array( $val ) ) {
+		$val = trim( $val );
+	}
+
+	array_walk_recursive( $val, function ( &$v ) {
+		$v = trim( $v );
+	} );
+}
+
+/**
+ * @param string|array $val
+ *
+ * Note: _sanitize_text_fields removes HTML tags
+ *
+ */
+function crb_sanitize_deep( &$val ) {
+	if ( ! is_array( $val ) ) {
+		$val = _sanitize_text_fields( $val, true );
+	}
+
+	array_walk_recursive( $val, function ( &$v ) {
+		$v = _sanitize_text_fields( $v, true );
+	} );
+}
+
 /**
  * Return true if a REST API URL has been requested
  *
@@ -1922,8 +1954,12 @@ function cerber_is_crawler( $ua ) {
 	return 0;
 }
 
+// TODO: remove this and other non-MySQLi stuff
 function cerber_db_use_mysqli() {
 	static $mysqli;
+
+	return true; // @since 8.6.1 Only MySQLi is supported
+
 	if ( $mysqli === null ) {
 		$db     = cerber_get_db();
 		$mysqli = $db->use_mysqli;
@@ -2262,14 +2298,8 @@ function cerber_get_set( $key, $id = null, $unserialize = true, $use_cache = nul
 	$key = preg_replace( CRB_SANITIZE_KEY, '', $key );
 	$cache_key = 'crb#' . $key . '#';
 
-	$and = '';
-	if ( $id !== null ) {
-		$and = ' AND the_id = ' . absint( $id );
-		$cache_key .= absint( $id );
-	}
-	else {
-		$cache_key .= '0';
-	}
+	$id = ( $id !== null ) ? absint( $id ) : 0;
+	$cache_key .= $id;
 
 	$ret = false;
 
@@ -2282,7 +2312,7 @@ function cerber_get_set( $key, $id = null, $unserialize = true, $use_cache = nul
 		}
 	}
 
-	if ( $row = cerber_db_get_row( 'SELECT * FROM ' . cerber_get_db_prefix() . CERBER_SETS_TABLE . ' WHERE the_key = "' . $key . '" ' . $and ) ) {
+	if ( $row = cerber_db_get_row( 'SELECT * FROM ' . cerber_get_db_prefix() . CERBER_SETS_TABLE . ' WHERE the_key = "' . $key . '" AND the_id = ' . $id ) ) {
 		if ( $row['expires'] > 0 && $row['expires'] < time() ) {
 			cerber_delete_set( $key, $id );
 			if ( $use_cache ) {
@@ -2378,18 +2408,12 @@ function cerber_delete_set( $key, $id = null) {
 	$key = preg_replace( CRB_SANITIZE_KEY, '', $key );
 	$cache_key = 'crb#' . $key . '#';
 
-	$and = '';
-	if ( $id !== null ) {
-		$and       = ' AND the_id = ' . absint( $id );
-		$cache_key .= absint( $id );
-	}
-	else {
-		$cache_key .= '0';
-	}
+	$id = ( $id !== null ) ? absint( $id ) : 0;
+	$cache_key .= $id;
 
 	cerber_cache_delete( $cache_key );
 
-	if ( cerber_db_query( 'DELETE FROM ' . cerber_get_db_prefix() . CERBER_SETS_TABLE . ' WHERE the_key = "' . $key . '"' . $and ) ) {
+	if ( cerber_db_query( 'DELETE FROM ' . cerber_get_db_prefix() . CERBER_SETS_TABLE . ' WHERE the_key = "' . $key . '" AND the_id = ' . $id ) ) {
 		return true;
 	}
 
@@ -2522,6 +2546,9 @@ function cerber_set_cookie( $name, $value, $expire = 0, $path = "", $domain = ""
 	if ( ! $path ) {
 		$path = cerber_get_cookie_path();
 	}
+
+	$expire = absint( $expire );
+	$expire = ( $expire > 43009401600 ) ? 43009401600 : $expire;
 
 	setcookie( cerber_get_cookie_prefix() . $name, $value, $expire, $path, $domain, $secure, $httponly );
 }
@@ -3132,10 +3159,18 @@ function cerber_empty_dir( $dir ) {
  * Tries to raise PHP limits
  *
  */
-function crb_raise_limits() {
-	@set_time_limit( 180 );
+function crb_raise_limits( $mem = null ) {
+
 	@ini_set( 'max_execution_time', 180 );
-	@ini_set( 'memory_limit', 512 );
+
+	if ( function_exists( 'set_time_limit' )
+	     && false === strpos( ini_get( 'disable_functions' ), 'set_time_limit' ) ) {
+		@set_time_limit( 0 );
+	}
+
+	if ( $mem ) {
+		@ini_set( 'memory_limit', $mem );
+	}
 }
 
 function cerber_mask_email( $email ) {
@@ -3253,6 +3288,13 @@ function crb_insert_with_markers( $filename, $marker, $insertion ) {
 	fclose( $fp );
 
 	return (bool) $bytes;
+}
+
+function crb_file_headers( $fname ) {
+	$fname = rawurlencode( $fname ); // encode non-ASCII symbols
+	@ob_clean(); // This trick is crucial for some servers/environments (e.g. some IIS)
+	header( "Content-Type: application/octet-stream" );
+	header( "Content-Disposition: attachment; filename*=UTF-8''{$fname}" );
 }
 
 // The key-value cache

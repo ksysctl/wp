@@ -253,17 +253,10 @@ function cerber_field_show( $args ) {
 
 	//$settings = get_site_option( 'cerber-' . $args['group'] );
 	$settings = crb_get_settings();
-	if ( is_array( $settings ) ) {
-		array_walk_recursive( $settings, 'esc_html' );
-	}
 
 	$pre      = '';
 	$value    = '';
 	$atts     = '';
-
-	if ( isset( $args['value'] ) ) {
-		$value = esc_html( $args['value'] ); // 7.9.8
-	}
 
 	$label = crb_array_get( $args, 'label', '' );
 
@@ -284,6 +277,10 @@ function cerber_field_show( $args ) {
 		$atts .= ' required="required" ';
 	}
 
+	if ( isset( $args['value'] ) ) {
+		$value = $args['value'];
+	}
+
 	if ( isset( $args['setting'] ) ) {
 		if ( ! $value && isset( $settings[ $args['setting'] ] ) ) {
 			$value = $settings[ $args['setting'] ];
@@ -297,6 +294,8 @@ function cerber_field_show( $args ) {
 			$value = urldecode( $value );
 		}
 	}
+
+	$value = crb_attr_escape( $value );
 
 	if ( isset( $args['list'] ) ) {
 		$value = cerber_array2text( $value, $args['delimiter'] );
@@ -338,34 +337,34 @@ function cerber_field_show( $args ) {
 			$s3 = $args['group'] . '-within';
 
 			$html = sprintf( $label,
-				cerber_txt_field( $name_prefix . '[' . $s1 . ']', $settings[ $s1 ], '', 3, 3, '\d+' ),
-				cerber_txt_field( $name_prefix . '[' . $s2 . ']', $settings[ $s2 ], '', 3, 3, '\d+' ),
-				cerber_txt_field( $name_prefix . '[' . $s3 . ']', $settings[ $s3 ], '', 3, 3, '\d+' ) );
+				cerber_digi_field( $name_prefix . '[' . $s1 . ']', $settings[ $s1 ] ),
+				cerber_digi_field( $name_prefix . '[' . $s2 . ']', $settings[ $s2 ] ),
+				cerber_digi_field( $name_prefix . '[' . $s3 . ']', $settings[ $s3 ] ) );
 			break;
 
 		case 'attempts':
 			$html = sprintf( __( '%s retries are allowed within %s minutes', 'wp-cerber' ),
-				cerber_txt_field( $name_prefix . '[attempts]', $settings['attempts'], '', 3, 3, '\d+' ),
-				cerber_txt_field( $name_prefix . '[period]', $settings['period'], '', 3, 3, '\d+' ) );
+				cerber_digi_field( $name_prefix . '[attempts]', $settings['attempts'] ),
+				cerber_digi_field( $name_prefix . '[period]', $settings['period'] ) );
 			break;
 
 		case 'reglimit':
 			$html = sprintf( __( '%s registrations are allowed within %s minutes from one IP address', 'wp-cerber' ),
-				cerber_txt_field( $name_prefix . '[reglimit_num]', $settings['reglimit_num'], '', 3, 3, '\d+' ),
-				cerber_txt_field( $name_prefix . '[reglimit_min]', $settings['reglimit_min'], '', 4, 4, '\d+' ));
+				cerber_digi_field( $name_prefix . '[reglimit_num]', $settings['reglimit_num'] ),
+				cerber_digi_field( $name_prefix . '[reglimit_min]', $settings['reglimit_min'], 4, 4 ) );
 			break;
 
 		case 'aggressive':
 			$html = sprintf( __( 'Increase lockout duration to %s hours after %s lockouts in the last %s hours', 'wp-cerber' ),
-				cerber_txt_field( $name_prefix . '[agperiod]', $settings['agperiod'], '', 3, 3, '\d+' ),
-				cerber_txt_field( $name_prefix . '[aglocks]', $settings['aglocks'], '', 3, 3, '\d+' ),
-				cerber_txt_field( $name_prefix . '[aglast]', $settings['aglast'], '', 3, 3, '\d+' ) );
+				cerber_digi_field( $name_prefix . '[agperiod]', $settings['agperiod'] ),
+				cerber_digi_field( $name_prefix . '[aglocks]', $settings['aglocks'] ),
+				cerber_digi_field( $name_prefix . '[aglast]', $settings['aglast'] ) );
 			break;
 
 		case 'notify':
 			$html = '<label class="crb-switch"><input class="screen-reader-text" type="checkbox" id="' . $args['setting'] . '" name="cerber-' . $args['group'] . '[' . $args['setting'] . ']" value="1" ' . checked( 1, $value, false ) . $atts . ' /><span class="crb-slider round"></span></label>'
 			        . __( 'Notify admin if the number of active lockouts above', 'wp-cerber' ) . ' ' .
-			        cerber_txt_field( $name_prefix . '[above]', $settings['above'], '', 3, 3, '\d+' ).
+			        cerber_digi_field( $name_prefix . '[above]', $settings['above'] ) .
 			        ' <span class="crb-no-wrap">[  <a href="' . cerber_admin_link_add( array(
 					'cerber_admin_do' => 'testnotify',
 					'type'            => 'lockout',
@@ -374,8 +373,8 @@ function cerber_field_show( $args ) {
 
 		case 'citadel':
 			$html = sprintf( __( 'Enable after %s failed login attempts in the last %s minutes', 'wp-cerber' ),
-				cerber_txt_field( $name_prefix . '[cilimit]', $settings['cilimit'], '', 3, 3, '\d+' ),
-				cerber_txt_field( $name_prefix . '[ciperiod]', $settings['ciperiod'], '', 3, 3, '\d+' ) . '<i ' . $data . '></i>' );
+				cerber_digi_field( $name_prefix . '[cilimit]', $settings['cilimit'] ),
+				cerber_digi_field( $name_prefix . '[ciperiod]', $settings['ciperiod'] ) . '<i ' . $data . '></i>' );
 			break;
 
 		case 'checkbox':
@@ -423,30 +422,40 @@ function cerber_field_show( $args ) {
 			break;
 		case 'text':
 		default:
-			/*$type = 'text';
-			if ( in_array( $args['type'], array( 'url' ) ) ) {
-				$type = $args['type'];
-			}*/
 
 			$type = crb_array_get( $args, 'type', 'text' );
-			if ( ! in_array( $type, array( 'url', 'number', 'email' ) ) ) {
-				$type = 'text';
+			if ( in_array( $type, array( 'url', 'number', 'email' ) ) ) {
+				$input_type = $type;
+			}
+			else {
+				$input_type = 'text';
 			}
 
 			$size      = '';
-			$maxlength = '';
-			$class     = 'crb-wide';
-			if ( isset( $args['size'] ) ) {
-				//$size = ' size="' . $args['size'] . '" maxlength="' . $args['size'] . '" ';
-				$size  = ' size="' . $args['size'] . '"';
-				$class = '';
+			$class     = '';
+
+			if ( $type == 'digits' ) {
+				$size  = '3';
+				$class = 'crb-digits';
 			}
-			if ( isset( $args['maxlength'] ) ) {
-				$maxlength = ' maxlength="' . $args['maxlength'] . '" ';
+
+			$size      = crb_array_get( $args, 'size', $size );
+			$maxlength = crb_array_get( $args, 'maxlength', $size );
+
+			if ( $maxlength ) {
+				$maxlength = ' maxlength="' . $maxlength . '" ';
 			}
-			elseif ( isset( $args['size'] ) ) {
-				$maxlength = ' maxlength="' . $args['size'] . '" ';
+            elseif ( $size ) {
+				$maxlength = ' maxlength="' . $size . '" ';
 			}
+
+			if ( $size ) {
+				$size = ' size="' . $size . '"';
+			}
+			else {
+				$class = 'crb-wide';
+			}
+
 
 			if ( isset( $args['pattern'] ) ) {
 				$atts .= ' pattern="' . $args['pattern'] . '"';
@@ -463,7 +472,7 @@ function cerber_field_show( $args ) {
 				}
 			}
 
-			$html = $pre . '<input type="' . $type . '" id="' . $args['setting'] . '" name="' . $name . '" value="' . $value . '"' . $atts . ' class="' . $class . '" ' . $size . $maxlength . $atts . $data . ' />';
+			$html = $pre . '<input type="' . $input_type . '" id="' . $args['setting'] . '" name="' . $name . '" value="' . $value . '"' . $atts . ' class="' . $class . '" ' . $size . $maxlength . $atts . $data . ' />';
 
 			if ( ! $size || crb_array_get( $args, 'label_pos' ) == 'below' ) {
 				$label = '<br/><label class="crb-below" for="' . $args['setting'] . '">' . $label . '</label>';
@@ -566,8 +575,18 @@ function cerber_checkbox( $name, $value, $label = '', $id = '', $atts = '' ) {
 	<div style="display: table-cell;"><label for="' . $id . '">' . $label . '</label></div>';
 }
 
-function cerber_txt_field( $name, $value = '', $id = '', $size = '', $maxlength = '', $pattern = '' ) {
+function cerber_digi_field( $name, $value = '', $size = '3', $maxlength = '3', $id = '' ) {
+	return cerber_txt_field( $name, $value, $id, $size, $maxlength, '\d+', 'crb-digits' );
+}
+
+function cerber_txt_field( $name, $value = '', $id = '', $size = '', $maxlength = '', $pattern = '', $class = '' ) {
 	$atts = '';
+	if ( $id ) {
+		$atts .= ' id="' . $id . '" ';
+	}
+	if ( $class ) {
+		$atts .= ' class="' . $class . '" ';
+	}
 	if ( $size ) {
 		$atts .= ' size="' . $size . '" ';
 	}
@@ -578,7 +597,7 @@ function cerber_txt_field( $name, $value = '', $id = '', $size = '', $maxlength 
 		$atts .= ' pattern="' . $pattern . '" ';
 	}
 
-	return '<input type="text" id="' . $id . '" name="' . $name . '" value="' . $value . '" ' . $atts . ' />';
+	return '<input type="text" name="' . $name . '" value="' . $value . '" ' . $atts . ' />';
 }
 
 function cerber_nonce_field( $action = 'control', $echo = false ) {
@@ -700,12 +719,11 @@ add_filter( 'pre_update_option_'.CERBER_OPT_U, function ($new, $old, $option) {
 	return $new;
 }, 10, 3 );
 /*
-	Sanitizing/checking user input for reCAPTCHA tab settings
+	Sanitizing/checking user input for anti-spam tab settings
 */
 add_filter( 'pre_update_option_' . CERBER_OPT_A, function ( $new, $old, $option ) {
-	if ( ! empty( $new['botswhite'] ) ) {
-		$new['botswhite'] = cerber_text2array( $new['botswhite'], "\n" );
-	}
+
+	$new['botswhite'] = cerber_text2array( $new['botswhite'], "\n" );
 
 	if ( empty( $new['botsany'] ) && empty( $new['botscomm'] ) && empty( $new['botsreg'] ) ) {
 		update_site_option( 'cerber-antibot', '' );
@@ -1048,7 +1066,7 @@ function cerber_update_site_option( $option_name, $value ) {
 /**
  * Updates Cerber's settings in a new way
  *
- * @since 8.5.9.1
+ * @since 8.6
  *
  */
 function cerber_settings_update() {
@@ -1059,7 +1077,7 @@ function cerber_settings_update() {
 	}
 
 	// We do not process some specific cases - not a real settings form
-	if ( $group == CRB_NX_SLAVE ) {
+	if ( defined( 'CRB_NX_SLAVE' ) && $group == CRB_NX_SLAVE ) {
 		return;
 	}
 
@@ -1082,6 +1100,9 @@ function cerber_settings_update() {
 
 	$fields = array_fill_keys( $fields, '' );
 	$post_fields = crb_get_post_fields( 'cerber-' . $group, array() );
+	crb_trim_deep( $post_fields );
+	$post_fields = stripslashes_deep( $post_fields );
+	crb_sanitize_deep( $post_fields ); // removes all tags
 
 	$new_settings = array_merge( $fields, $post_fields );
 
@@ -1109,4 +1130,41 @@ function cerber_settings_update() {
 		'remote'     => $remote
 	) );
 
+}
+
+/**
+ * Escaping attributes (values) for forms
+ *
+ * @param array|string $value
+ *
+ * @return array|string
+ */
+function crb_attr_escape( $value ) {
+	if ( is_array( $value ) ) {
+		array_walk_recursive( $value, function ( &$element ) {
+			$element = crb_escape( $element );
+		} );
+	}
+	else {
+		$value = crb_escape( $value );
+	}
+
+	return $value;
+}
+
+/**
+ * Helper
+ *
+ * @param string $val
+ *
+ * @return string Escaped string
+ */
+function crb_escape( $val ) {
+	if ( ! $val
+	     || is_numeric( $val ) ) {
+		return $val;
+	}
+
+	// the same way as in esc_attr();
+	return _wp_specialchars( $val, ENT_QUOTES );
 }

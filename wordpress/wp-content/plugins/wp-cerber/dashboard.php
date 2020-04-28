@@ -126,7 +126,7 @@ function cerber_show_admin_page( $title, $tabs = array(), $active_tab = null, $r
 
 		cerber_show_tabs( $active_tab, $tabs );
 
-		cerber_show_aside( $active_tab );
+		echo '<div style="display: table; width:100%;">';
 
 		echo '<div class="crb-main crb-tab-' . $active_tab . '">';
 
@@ -136,6 +136,10 @@ function cerber_show_admin_page( $title, $tabs = array(), $active_tab = null, $r
         elseif ( is_callable( $renderer ) ) {
 			call_user_func( $renderer, $active_tab );
 		}
+
+		echo '</div>';
+
+		cerber_show_aside( $active_tab );
 
 		echo '</div>';
 
@@ -247,7 +251,7 @@ function cerber_block_delete( $ip ) {
 function cerber_acl_form(){
 
 	//echo '<h2>'.__('White IP Access List','wp-cerber').'</h2><p><span style="color:green;" class="dashicons-before dashicons-thumbs-up"></span> '.__('These IPs will never be locked out','wp-cerber').' - <a target="_blank" href="https://wpcerber.com/using-ip-access-lists-to-protect-wordpress/">Know more</a></p>'.
-	echo '<h2>'.__('White IP Access List','wp-cerber').'</h2><p>Read more: <a target="_blank" href="https://wpcerber.com/using-ip-access-lists-to-protect-wordpress/">How Access Lists work</a></p>'.
+	echo '<h2>' . __( 'White IP Access List', 'wp-cerber' ) . '</h2><p><a target="_blank" href="https://wpcerber.com/using-ip-access-lists-to-protect-wordpress/">How Access Lists work</a> &nbsp;|&nbsp; <a href="' . cerber_admin_link( 'imex' ) . '">Import entries</a></p>' .
 	     cerber_acl_get_table('W');
 	//echo '<h2>'.__('Black IP Access List','wp-cerber').'</h2><p><span style="color:red;" class="dashicons-before dashicons-thumbs-down"></span> '.__('Nobody can log in or register from these IPs','wp-cerber').' - <a target="_blank" href="https://wpcerber.com/using-ip-access-lists-to-protect-wordpress/">Know more</a></p>'.
 	echo '<h2>'.__('Black IP Access List','wp-cerber').'</h2>'.
@@ -265,17 +269,19 @@ function cerber_acl_form(){
 
     <table class="crb-acl-hints">
         <tr><td colspan="3">Use the following formats to add entries to the access lists</td></tr>
-        <tr><td>IPv4</td><td>Single IP address</td><td>192.168.5.22</td></tr>
+        <tr><td>IPv4</td><td>Single IPv4 address</td><td>192.168.5.22</td></tr>
         <tr><td>IPv4</td><td>Range specified with hyphen (dash)</td><td>192.168.1.45 - 192.168.22.165</td></tr>
-        <tr><td>IPv4</td><td>CIDR</td><td>192.168.128.0/24</td></tr>
-        <tr><td>IPv4</td><td>Subnet Class C</td><td>192.168.77.*</td></tr>
-        <tr><td>IPv4</td><td>Subnet Class B</td><td>192.168.*.*</td></tr>
-        <tr><td>IPv4</td><td>Subnet Class A</td><td>192.*.*.*</td></tr>
-        <tr><td>IPv4</td><td>Any IPv4 address</td><td>*.*.*.*</td></tr>
-        <tr><td>IPv6</td><td>Single IP address</td><td>2001:0db8:85a3:0000:0000:8a2e:0370:7334</td></tr>
+        <tr><td>IPv4</td><td>Range specified with CIDR</td><td>192.168.128.0/20</td></tr>
+        <tr><td>IPv4</td><td>Subnet Class C specified with CIDR</td><td>192.168.77.0/24</td></tr>
+        <tr><td>IPv4</td><td>Any IPv4 address specified with CIDR</td><td>0.0.0.0/0</td></tr>
+        <tr><td>IPv4</td><td>Subnet Class C specified with wildcard</td><td>192.168.77.*</td></tr>
+        <tr><td>IPv4</td><td>Subnet Class B specified with wildcard</td><td>192.168.*.*</td></tr>
+        <tr><td>IPv4</td><td>Subnet Class A specified with wildcard</td><td>192.*.*.*</td></tr>
+        <tr><td>IPv4</td><td>Any IPv4 address specified with wildcard</td><td>*.*.*.*</td></tr>
+        <tr><td>IPv6</td><td>Single IPv6 address</td><td>2001:0db8:85a3:0000:0000:8a2e:0370:7334</td></tr>
         <tr><td>IPv6</td><td>Range specified with hyphen (dash)</td><td>2001:db8::ff00:41:0 - 2001:db8::ff00:41:12ff</td></tr>
-        <tr><td>IPv6</td><td>CIDR</td><td>2001:db8::/46</td></tr>
-        <tr><td>IPv6</td><td>Wildcard</td><td>2001:db8::ff00:41:*</td></tr>
+        <tr><td>IPv6</td><td>Range specified with CIDR</td><td>2001:db8::/46</td></tr>
+        <tr><td>IPv6</td><td>Range specified with wildcard</td><td>2001:db8::ff00:41:*</td></tr>
         <tr><td>IPv6</td><td>Any IPv6 address</td><td>::/0</td></tr>
     </table>
 
@@ -790,7 +796,7 @@ function crb_admin_get_tokenized_link() {
 
 function cerber_export_activity( $params = array() ) {
 
-	crb_raise_limits();
+	crb_raise_limits( 512 );
 
 	$args = array( 'per_page' => 0 );
 
@@ -895,12 +901,13 @@ function cerber_export_activity( $params = array() ) {
 
 function cerber_send_csv_header( $f_name, $total, $heading = array(), $info = array() ) {
 
-	$fname = rawurlencode( $f_name ) . '.csv'; // encode non-ASCII symbols
+	$fname = $f_name . '.csv';
 
-	header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK' );
-	header( "Content-type: application/force-download" );
-	header( "Content-Type: application/octet-stream" );
-	header( "Content-Disposition: attachment; filename*=UTF-8''{$fname}" );
+	//$fname = rawurlencode( $f_name ) . '.csv'; // encode non-ASCII symbols
+	//@ob_clean(); // This trick is crucial for some servers/environments (IIS)
+	//header( "Content-Type: application/octet-stream" );
+	//header( "Content-Disposition: attachment; filename*=UTF-8''{$fname}" );
+	crb_file_headers( $fname );
 
 	$info[] = '"Generated by:","WP Cerber Security ' . CERBER_VER . '"';
 	$info[] = '"Website:","' . get_option( 'blogname' ) . '"';
@@ -912,6 +919,7 @@ function cerber_send_csv_header( $f_name, $total, $heading = array(), $info = ar
 	foreach ( $heading as &$item ) {
 		$item = '"' . str_replace( '"', '""', trim( $item ) ) . '"';
 	}
+
 	echo implode( ',', $heading ) . "\r\n";
 
 }
@@ -1161,7 +1169,7 @@ function cerber_show_activity( $args = array(), $echo = true ) {
 		   </div>
 		   
 		   <div class="crb-act-controls">
-		   <a href="#" class="crb-opener" data-target="crb-more-activity-fields">More</a>		   
+		   [ <a href="#" class="crb-opener" data-target="crb-more-activity-fields">More</a> ]		   
 		   </div>
 		   		   
 		   </div>
@@ -1371,25 +1379,26 @@ function cerber_ip_extra_view( $ip, $context = 'activity' ) {
 		return '';
 	}
 
-	$ip_info = ' ';
-	$acl     = cerber_acl_check( $ip );
+	$ip_navs = '';
+
+	if ( $context == 'activity' ) {
+		$ip_navs .= cerber_traffic_link( array( 'filter_ip' => $ip ) );
+	}
+	else {
+		$ip_navs .= ' <a class="crb-button-tiny" href="' . cerber_admin_link( 'activity', array( 'filter_ip' => $ip ) ) . '">' . __( 'Check for activities', 'wp-cerber' ) . '</a>';
+	}
+
+	$acl = cerber_acl_check( $ip );
 
 	if ( $acl == 'W' ) {
-		$ip_info .= '<span class="crb-color-green ip-info-label">' . __( 'White IP Access List', 'wp-cerber' ) . '</span> ';
+		$ip_navs .= ' <span class="crb-color-green ip-info-label">' . __( 'White IP Access List', 'wp-cerber' ) . '</span> ';
 	}
     elseif ( $acl == 'B' ) {
-		$ip_info .= '<span class="crb-color-black ip-info-label">' . __( 'Black IP Access List', 'wp-cerber' ) . '</span> ';
+		$ip_navs .= ' <span class="crb-color-black ip-info-label">' . __( 'Black IP Access List', 'wp-cerber' ) . '</span> ';
 	}
 
 	if ( cerber_block_check( $ip ) ) {
-		$ip_info .= '<span class="color-blocked ip-info-label">' . __( 'Locked out', 'wp-cerber' ) . '</span> ';
-	}
-
-	if ( $context == 'activity' ) {
-		$ip_info .= cerber_traffic_link( array( 'filter_ip' => $ip ) );
-	}
-	else {
-		$ip_info .= ' <a class="crb-button-tiny" href="' . cerber_admin_link( 'activity', array( 'filter_ip' => $ip ) ) . '">' . __( 'Check for activities', 'wp-cerber' ) . '</a>';
+		$ip_navs .= ' <span class="color-blocked ip-info-label">' . __( 'Locked out', 'wp-cerber' ) . '</span> ';
 	}
 
 	// Filter activity by ...
@@ -1406,6 +1415,7 @@ function cerber_ip_extra_view( $ip, $context = 'activity' ) {
 	$abuse        = '';
 	$network      = '';
 	$network_info = '';
+	$network_navs = '';
 
 	if ( crb_get_settings( 'ip_extra' ) ) {
 		$ip_data = cerber_ip_whois_info( $ip );
@@ -1419,12 +1429,15 @@ function cerber_ip_extra_view( $ip, $context = 'activity' ) {
 			$country = $ip_data['country'];
 		}
 		if ( ! empty( $ip_data['data']['abuse-mailbox'] ) ) {
-			$abuse = '<p>' . __( 'Abuse email:', 'wp-cerber' ) . ' <a href="mailto:' . $ip_data['data']['abuse-mailbox'] . '">' . $ip_data['data']['abuse-mailbox'] . '</a></p>';
+			//$abuse = '<p>' . __( 'Abuse email:', 'wp-cerber' ) . ' <a href="mailto:' . $ip_data['data']['abuse-mailbox'] . '">' . $ip_data['data']['abuse-mailbox'] . '</a></p>';
+			$abuse = __( 'Abuse email:', 'wp-cerber' ) . ' <a href="mailto:' . $ip_data['data']['abuse-mailbox'] . '">' . $ip_data['data']['abuse-mailbox'] . '</a>';
 		}
 		if ( ! empty( $ip_data['data']['network'] ) ) {
-			$network      = $ip_data['data']['network'];
-			$range        = cerber_any2range( $network );
-			$network_info = '<p>' . __( 'Network:', 'wp-cerber' ) . ' ' . $network . ' &nbsp; <a class="crb-button-tiny" href="' . cerber_admin_link( 'activity', array( 'filter_ip' => $range['range'] ) ) . '">' . __( 'Check for activities', 'wp-cerber' ) . '</a> ' . cerber_traffic_link( array( 'filter_ip' => $range['range'] ) );
+			$network = $ip_data['data']['network'];
+			$range   = cerber_any2range( $network );
+			//$network_info = '<p>' . __( 'Network:', 'wp-cerber' ) . ' ' . $network . ' &nbsp; <a class="crb-button-tiny" href="' . cerber_admin_link( 'activity', array( 'filter_ip' => $range['range'] ) ) . '">' . __( 'Check for activities', 'wp-cerber' ) . '</a> ' . cerber_traffic_link( array( 'filter_ip' => $range['range'] ) );
+			$network_info = __( 'Network:', 'wp-cerber' ) . ' ' . $network;
+			$network_navs = '<a class="crb-button-tiny" href="' . cerber_admin_link( 'activity', array( 'filter_ip' => $range['range'] ) ) . '">' . __( 'Check for activities', 'wp-cerber' ) . '</a> ' . cerber_traffic_link( array( 'filter_ip' => $range['range'] ) );
 		}
 	}
 
@@ -1450,11 +1463,15 @@ function cerber_ip_extra_view( $ip, $context = 'activity' ) {
 		        '</form>';
 	}
 
+	$ip_info = '<span id = "ip-address">' . $ip . '</span><span id = "ip-country">' . $country . '</span>';
+
 	$ret = '<div class="crb-extra-info">
-			<table>
-			<tr><td><p><span id = "ip-address">' . $ip . '</span><span id = "ip-country">' . $country . '</span>' . $ip_info . '</p>' . $network_info . $abuse . '</td><td>' . $form . '</td></tr>
-			</table>
-			</div>';
+		<table>
+		<tr><td id="crb_the_summary">
+		<div><div>' . $ip_info . '</div><div>' . $ip_navs . '</div></div>
+		<div><div>' . $network_info . '</div><div>' . $network_navs . '</div></div><p>' . $abuse . '</p></td><td>' . $form . '</td></tr>
+		</table>
+		</div>';
 
 	return $ret . $whois;
 }
@@ -1493,7 +1510,10 @@ function cerber_user_extra_view( $user_id, $context = 'activity' ) {
 			$ret .= '<div>' . $avatar . '</div>';
 		}
 
+		$user_info = array();
+
 		// Registered
+		$reg  = false;
 		$time = strtotime( cerber_db_get_var( "SELECT user_registered FROM  {$wpdb->users} WHERE id = " . $user_id ) );
 		if ( $time ) {
 			$reg = cerber_auto_date( $time );
@@ -1504,20 +1524,22 @@ function cerber_user_extra_view( $user_id, $context = 'activity' ) {
 					}
 				}
 			}
+
+			$user_info[] = array( __( 'Registered', 'wp-cerber' ), $reg );
 		}
 
-		// Activated
+
+		// Activated - BuddyPress
 		if ( $log = cerber_get_log( array( 200 ), array( 'id' => $user_id ) ) ) {
-			$acted = $log[0];
-			$activated = __( 'Activated', 'wp-cerber' ) . ': ' . cerber_auto_date( $acted->stamp );
+			$acted     = $log[0];
+			$activated = cerber_auto_date( $acted->stamp );
 			if ( $country = crb_country_html( null, $acted->ip ) ) {
 				$activated .= ' &nbsp; ' . $country;
 			}
-			$activated = '<p>' . $activated . '</p>';
+
+			$user_info[] = array( __( 'Activated', 'wp-cerber' ), $activated );
 		}
-		else {
-			$activated = '';
-		}
+
 
 		// Last seen
 		$seen = '';
@@ -1531,17 +1553,25 @@ function cerber_user_extra_view( $user_id, $context = 'activity' ) {
 
 		if ( $sn ) {
 			$seen = cerber_auto_date( $sn->stamp );
-			$seen = __( 'Last seen', 'wp-cerber' ) . ': ' . $seen;
 			if ( $country = crb_country_html( null, $sn->ip ) ) {
 				$seen .= ' &nbsp; ' . $country;
 			}
-			$seen = '<p>' . $seen . '</p>';
+
+			$user_info[] = array( __( 'Last seen', 'wp-cerber' ), $seen );
 		}
 
-		$usn      = cerber_db_get_var( 'SELECT count(user_id) FROM ' . cerber_get_db_prefix() . CERBER_USS_TABLE . ' WHERE user_id = ' . $user_id );
-		$sessions = ( $usn ) ? '<p><a href="' . cerber_admin_link( 'sessions', array( 'filter_user' => $user_id ) ) . '">Active sessions: ' . $usn . '</a></p>' : '';
+		if ( $usn = cerber_db_get_var( 'SELECT count(user_id) FROM ' . cerber_get_db_prefix() . CERBER_USS_TABLE . ' WHERE user_id = ' . $user_id ) ) {
+			$user_info[] = array( __( 'Active sessions', 'wp-cerber' ), '<a href="' . cerber_admin_link( 'sessions', array( 'filter_user' => $user_id ) ) . '">' . $usn . '</a>');
+		}
 
-		$ret .= '<div>' . $name . '<p>' . __( 'Registered', 'wp-cerber' ) . ': ' . $reg . '</p>' . $seen . $activated . $sessions . '</div>';
+		//$ret .= '<div>' . $name . '<p>' . __( 'Registered', 'wp-cerber' ) . ': ' . $reg . '</p>' . $seen . $activated . $sessions . '</div>';
+
+		$summary = '';
+		foreach ( $user_info as $row ) {
+			$summary .= '<div><div>' . implode( '</div><div>', $row ) . '</div></div>';
+		}
+
+		$ret .= '<div id="crb_the_summary">' . $name . $summary . '</div>';
 
 		if ( $context == 'activity' ) {
 			$link = cerber_traffic_link( array( 'filter_user' => $user_id ) );
@@ -2410,34 +2440,6 @@ function cerber_show_aside( $page ) {
 	$aside[] = '<a href="https://wpcerber.com/pro/" target="_blank"><img src="'.$crb_assets_url.'bn3ra.png" width="290" height="478"/></a>';
 
 	}
-/*
-	if (!lab_lab() && !in_array($page,array('geo'))) {
-		$aside[] = '<div class="crb-box" id = "crb-donate">
-			<div class="crb-box-inner">
-			<h3>' . __( 'Donate', 'wp-cerber' ) . '</h3>
-			<p>Please consider making a donation to support the continued development and free support of this plugin. Thanks!</p>
-			
-			<div style="text-align:center;">
-			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-			<input type="hidden" name="cmd" value="_s-xclick">
-			<input type="hidden" name="hosted_button_id" value="SR8RJXFU35EW8">
-			<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG_global.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online.">
-			<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-			</form>
-			</div>
-			
-			</div>
-			</div>';
-	}
-*/
-	/*$aside[] = '<div class="crb-box" id = "crb-jetflow">
-			<div class="crb-box-inner">
-			<h3>Automate WordPress</h3>
-			<p>Create automation scenarios without coding knowledge with the jetFlow.io plugin. Customize your WordPress in no time. No programming knowledge needed anymore.</p>
-			<p><span class="dashicons-before dashicons-layout"></span> &nbsp; <a href="http://jetflow.io/" target="_blank">Download the jetFlow.io plugin</a></p>
-			</div>
-			</div>
-	';*/
 
 	$aside[] = '<div class="crb-box" id = "crb-blog">
 			<div class="crb-box-inner">
@@ -2782,6 +2784,9 @@ function cerber_admin_head() {
         crb_ajax_nonce = '<?php echo $crb_ajax_nonce; ?>';
         crb_ajax_loader = '<?php echo $crb_ajax_loader; ?>';
         crb_lab_available = <?php echo $crb_lab_available; ?>;
+
+        crb_admin_page = '<?php echo crb_admin_get_page(); ?>';
+        crb_admin_tab = '<?php echo crb_admin_get_tab(); ?>';
 
         crb_scan_msg_steps = <?php echo json_encode( cerber_step_desc() ); ?>;
         crb_scan_msg_issues = <?php echo json_encode( cerber_get_issue_label() ); ?>;
@@ -3515,7 +3520,7 @@ function crb_country_html($code = null, $ip = null){
 
 function cerber_export_traffic( $params = array() ) {
 
-	crb_raise_limits();
+	crb_raise_limits( 512 );
 
 	$args = array(
 		'per_page' => 0,
@@ -4838,15 +4843,17 @@ function cerber_show_tabs( $active, $tabs = array() ) {
 // Access Lists (ACL) ---------------------------------------------------------
 
 /**
- * @param $ip
- * @param $tag
- * @param $comment string
- * @param $acl_slice int
+ * @param string $ip
+ * @param string $tag
+ * @param string $comment
+ * @param int $acl_slice
  *
  * @return bool|WP_Error
  */
 function cerber_acl_add( $ip, $tag, $comment = '', $acl_slice = 0 ) {
 	global $wpdb;
+
+	$ip = trim( $ip );
 
 	$acl_slice = absint( $acl_slice );
 	$v6range = '';
@@ -4861,7 +4868,8 @@ function cerber_acl_add( $ip, $tag, $comment = '', $acl_slice = 0 ) {
 		list( $begin, $end, $v6range ) = crb_ipv6_prepare( $ip, $ip );
 	    $ver6 = 1;
 	}
-    elseif ( $range = cerber_any2range( $ip ) ) {
+    elseif ( ( $range = cerber_any2range( $ip ) )
+	         && is_array( $range ) ) {
 		$ver6    = $range['IPV6'];
 		$begin   = $range['begin'];
 		$end     = $range['end'];
@@ -4887,7 +4895,7 @@ function cerber_acl_add( $ip, $tag, $comment = '', $acl_slice = 0 ) {
 	), array( '%s', '%d', '%d', '%s', '%s', '%d', '%s', '%d' ) );
 
 	if ( ! $result ) {
-		return new WP_Error( 'acl_db_error', __( $wpdb->last_error, 'wp-cerber' ) );
+		return new WP_Error( 'acl_db_error', $wpdb->last_error );
 	}
 
 	crb_event_handler( 'ip_event', array(

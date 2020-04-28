@@ -3504,7 +3504,7 @@ msgstr "Bli aviserad omedelbart med aviseringar på mobil och stationär dator"
 
 #: ../settings.php:664
 msgid "Weekly report is a summary of all activities and suspicious events occurred during the last seven days"
-msgstr ""
+msgstr "Veckorapport är en sammanfattning av alla aktiviteter och misstänkta händelser inträffade under de senaste sju dagarna"
 
 #: ../settings.php:677 ../settings.php:916
 msgid "if empty, the email addresses from the notification settings will be used"
@@ -3576,7 +3576,7 @@ msgstr ""
 
 #: ../dashboard.php:1152
 msgid "Search in URL"
-msgstr ""
+msgstr "Sök i URL"
 
 #: ../settings.php:831 ../settings.php:840
 msgid "Executable files"
@@ -3584,5 +3584,5 @@ msgstr ""
 
 #: ../settings.php:832 ../settings.php:841
 msgid "All files"
-msgstr ""
+msgstr "Alla filer"
 

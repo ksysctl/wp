@@ -153,25 +153,10 @@ function nexus_slave_process() {
 	}
 
 	@ini_set( 'display_errors', 0 );
-	@set_time_limit( 180 );
-	@ini_set( 'max_execution_time', 180 );
 	@ignore_user_abort( true );
+	crb_raise_limits();
+
 	cerber_update_set( 'processing_master_request', 1, 0, false, time() + 120 );
-
-	/*
-	if ( function_exists( 'cerber_mode' ) ) {
-		nexus_diag_log( '+++++++++++++++++++++++++++++++++++++' );
-	}
-	nexus_diag_log( 'CGM ' . cerber_get_mode() );
-	nexus_diag_log( 'CGS' . crb_get_settings( 'boot-mode' ) );
-	if (defined('CERBER_MODE')) {
-		nexus_diag_log( 'CONSTA! ' .CERBER_MODE);
-	}
-	nexus_diag_log('===='.print_r(get_included_files(),1));
-
-	//cerber_check_environment();
-
-	*/
 
 	nexus_diag_log( 'Parsing request...' );
 

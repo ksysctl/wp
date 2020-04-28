@@ -44,6 +44,7 @@
 
 #crb-admin input[type="text"],
 #crb-admin input[type="number"],
+#crb-admin input[type="url"],
 #crb-admin select,
 #crb-admin .select2-container {
     margin: 0;
@@ -53,6 +54,12 @@
     vertical-align: middle;
     font-size: 13px;
     min-height: auto;
+}
+
+#crb-admin input.crb-digits {
+    text-align: center;
+    /*font-family: Menlo, Consolas, Monaco, monospace;
+    font-size: 14px;*/
 }
 
 #crb-admin textarea,
@@ -78,8 +85,10 @@
 }
 
 .crb-main {
-    width: auto;
-    overflow: hidden;
+    /*width: auto;
+    overflow: hidden;*/
+    display: table-cell;
+    width: 80%;
     padding-top: 1em;
 }
 
@@ -138,6 +147,17 @@
     color: #888;
 }
 
+.crb-settings .crb-label-above {
+    color: #333;
+    font-weight: bold;
+    padding-bottom: 0.7em;
+}
+
+#crb-form-user_shield th,
+#crb-form-opt_shield th{
+    display: none;
+}
+
 /* Select2 */
 
 #crb-admin [class^='select2'] {
@@ -149,24 +169,34 @@
 .crb-select2-multi {
     margin-bottom: 0.5rem; /* workaround */
 }
-#crb-admin .select2-search__field {
-    /*width: 300px !important;*/
+
+#crb-admin .select2-container .select2-selection--single .select2-selection__rendered {
+    padding-right: 28px;
 }
 
-/*#crb-admin select.crb-filter-act option[value="0"] {
-    color: #777;
-}*/
+/* Select2 arrow icon */
 
-.crb-settings .crb-label-above {
-    color: #333;
-    font-weight: bold;
-    padding-bottom: 0.7em;
+#crb-admin .select2-container .select2-selection--single .select2-selection__arrow {
+    right: 1px;
+    height: 28px;
+    width: 28px;
+    background: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E") no-repeat right 5px top 55%;
+    background-size: 16px 16px;
 }
 
-#crb-form-user_shield th,
-#crb-form-opt_shield th{
+#crb-admin .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 26px;
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 20px;
+}
+
+#crb-admin .select2-container .select2-selection--single .select2-selection__arrow b {
     display: none;
 }
+
+
 
 /* Dashboard */
 
@@ -215,9 +245,14 @@
 /* Aside bar */
 
 #crb-aside {
-    float: right;
-    width: 290px;
-    margin: 1em 0 0 1em;
+    /*float: right;*/
+    display: table-cell;
+    width: 20%;
+    padding-left: 1em;
+    padding-top: 1em;
+    max-width: 290px;
+    vertical-align: top;
+    /*margin: 1em 0 0 1em;*/
 }
 #crb-aside .crb-box {
     background-color: #fff;
@@ -268,13 +303,13 @@
     content: "\f331";*/
     font-family: "cerber-icon" !important;
     content: '\10ffff';
-    font-size: 250px;
-    color: grey;
+    font-size: 200px;
+    color: #01735e;
     opacity: 0.2;
     z-index: 1;
     position: absolute;
     top: 45%;
-    left: -5%;
+    left: 0;
 }
 
 #crb-donate {
@@ -611,7 +646,8 @@ td.crb-traffic-details div{
 
 .ip-info-label {
     padding: 1px 6px 1px 6px;
-    margin-left: 4px;
+    margin-right: 4px;
+    white-space: nowrap;
 }
 
 /* Activity */
@@ -835,6 +871,7 @@ p.act-url{
 }
 
 /* Access Lists */
+
 .acl-wrapper {
     margin-bottom: 30px;
     width: 100%;
@@ -848,7 +885,7 @@ p.act-url{
 }*/
 
 .acl-wrapper form table {
-    margin-top: 1em;
+    margin-top: 0.4em;
     width: 100%;
     border-collapse: collapse;
 }
@@ -861,7 +898,8 @@ p.act-url{
 .acl-wrapper form table td:nth-child(2) {
     padding-left: 4px;
 }
-.acl-wrapper input[type="text"]{
+#crb-admin .acl-wrapper input[type="text"]{
+    border: 2px solid #d6d6d6;
     width:100%;
 }
 
@@ -991,7 +1029,8 @@ a.nav-tab:last-of-type{
     text-align: center;
 }
 
-.crb-user-blocked td.column-username {
+.crb-user-blocked td.column-username,
+.crb-user-blocked .crb-user-name {
     color: red;
 }
 
@@ -1437,7 +1476,7 @@ body.wp-cerber_page_cerber-integrity {
 
 div.crb-extra-info {
     overflow: auto;
-    padding: 10px 25px;
+    padding: 15px 25px 5px 25px;
     background-color: #f8f8f8;
     border: solid 1px #ddd;
     border-bottom: none;
@@ -1449,9 +1488,10 @@ div.crb-extra-info table{
 }
 div.crb-extra-info table td:nth-child(2){
     text-align: right;
+    vertical-align: top;
 }
 div.crb-extra-info p{
-    line-height: 0.7em !important;
+    line-height: 1;
 }
 /*div#ip-extra p:first-child {*/
 div.crb-extra-info span#ip-address,
@@ -1470,12 +1510,16 @@ div.crb-extra-info #acl-buttons{
     float:right;
     max-width: 30%;
 }
-/*
-		#acl-buttons form{
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-		}*/
+
+
+#crb_the_summary > div {
+    display: table-row;
+}
+
+#crb_the_summary > div > div {
+    display: table-cell;
+    padding: 0 0.6em 0.8em 0;
+}
 
 div#whois {
     border: solid 1px #ddd;
@@ -1513,7 +1557,7 @@ div#whois:hover {
     white-space: pre-wrap; /* css-3 */
 }
 
-#user-extra-info div {
+#user-extra-info > div {
     float: left;
     margin-right: 3em;
 }
