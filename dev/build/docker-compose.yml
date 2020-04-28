@@ -20,6 +20,7 @@ services:
     cap_add:
         - SYS_NICE
   wp:
+    image: wp
     container_name: ${WP_CONTAINER}
     build:
         context: ../../

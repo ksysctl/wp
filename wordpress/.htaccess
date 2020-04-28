@@ -131,4 +131,7 @@ RewriteRule \.(jpg|jpeg|png|gif|svg)$ - [NC,F,L]
 
     # Hide server information
     Header unset X-Powered-By
+
+    # Force all connections over TLS
+    Header always set Strict-Transport-Security "max-age=15768000; includeSubDomains; preload"
 </IfModule>

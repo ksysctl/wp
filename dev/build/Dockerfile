@@ -11,13 +11,13 @@ RUN apt-get update && \
     apt-get install -y apt-utils 
 
 # Install dependencies
-RUN apt-get install -y less ssl-cert
-RUN yes | pecl install xdebug
+RUN apt-get install -y less ssl-cert && \
+    yes | pecl install xdebug
 
 # Enable modules
 RUN a2enmod ssl  && \
-    a2enmod headers
-RUN a2ensite default-ssl
+    a2enmod headers && \
+    a2ensite default-ssl
 
 # Set http configuration
 COPY dev/deploy/apache/security.conf \

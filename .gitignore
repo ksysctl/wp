@@ -8,9 +8,12 @@ data/sql/*
 
 # Wordpress files
 wordpress/wp-config.php
+
 wordpress/wp-content/cache/*
 wordpress/wp-content/uploads/*
 wordpress/wp-content/upgrade/*
+
+wordpress/wp-content/debug.log
 
 # General files
 .idea/*
