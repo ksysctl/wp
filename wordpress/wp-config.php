@@ -79,7 +79,7 @@ $table_prefix = 'xwp_';
  */
 if (getenv( 'WORDPRESS_DEV_MODE') === 'DEV') {
 	define( 'WP_DEBUG', true );
-	define( 'WP_DEBUG_LOG', '/tmp/wp.debug.log' );
+	define( 'WP_DEBUG_LOG', true );
 	define( 'WP_DEBUG_DISPLAY', true );
 	define( 'SCRIPT_DEBUG', true );
 	define( 'SAVEQUERIES', true );
@@ -105,6 +105,9 @@ define ( 'GENERATE_HOOKS_DISALLOW_PHP', true );
 
 // Force all logins and all admin sessions to happen over SSL
 define( 'FORCE_SSL_ADMIN', true );
+
+// Limit post revisions
+define( 'WP_POST_REVISIONS', 10 );
 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
 // see also http://codex.wordpress.org/Administration_Over_SSL#Using_a_Reverse_Proxy
