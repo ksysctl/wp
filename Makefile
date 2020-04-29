@@ -32,13 +32,19 @@ common_args=-f $(compose_file) --env-file $(env_file)
 .PHONY: build rebuild up down \
 	logs shell \
 	restore backup \
-	setup change manager
+	setup \
+	change-server change-manager change-option \
+	change-akismet change-recaptcha
 
 # args. for our Makefile from CLI
-dns ?= $(WP_LOCAL_SERVER)
+domain ?= $(WP_LOCAL_SERVER)
 username ?= ''
 email ?= ''
 password ?= ''
+blogname ?= $(WP_PROJECT)
+blogdesc ?= ''
+apikey ?= ''
+apisecret ?= ''
 
 # targets
 all: build
@@ -85,25 +91,46 @@ setup:
 ifndef WP_PROJECT
 	./$(setup_file)
 endif
-change:
+change-server:
 ifdef WP_PROJECT
 	@docker-compose $(common_args) exec wp sh -c \
-		'wp --allow-root search-replace $(WP_LOCAL_SERVER) $(dns) --skip-columns=guid'
+		'wp --allow-root search-replace $(WP_LOCAL_SERVER) $(domain) --skip-columns=guid'
 	@docker-compose $(common_args) exec wp sh -c \
 		'rm -Rf /var/www/html/wp-content/cache/*'
 	@docker-compose $(common_args) down
 
-	sed -i "" 's/$(WP_LOCAL_SERVER)/$(dns)/g' dev/deploy/.env
-	sed -i "" 's/$(WP_LOCAL_SERVER)/$(dns)/g' dev/deploy/apache/default.conf
-	sed -i "" 's/$(WP_LOCAL_SERVER)/$(dns)/g' wordpress/.htaccess
-	sudo sh -c "sed -i \"\" 's/127.0.0.1	$(WP_LOCAL_SERVER)/127.0.0.1	$(dns)/g' /etc/hosts"
+	sed -i "" 's/$(WP_LOCAL_SERVER)/$(domain)/g' dev/deploy/.env
+	sed -i "" 's/$(WP_LOCAL_SERVER)/$(domain)/g' dev/deploy/apache/default.conf
+	sed -i "" 's/$(WP_LOCAL_SERVER)/$(domain)/g' wordpress/.htaccess
+	sudo sh -c "sed -i \"\" 's/127.0.0.1	$(WP_LOCAL_SERVER)/127.0.0.1	$(domain)/g' /etc/hosts"
 	
 	@docker-compose $(common_args) up --build --remove-orphans
 endif
-manager:
+change-manager:
 ifdef WP_PROJECT
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root user create $(username) $(email) --user_pass=$(password) --role=administrator --porcelain'
 	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root user session destroy cms --all'
+	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root user delete cms --yes'
+endif
+change-option:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root option update blogname "$(blogname)"'
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root option update blogdescription "$(blogdesc)"'
+endif
+change-akismet:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root option update wordpress_api_key "$(apikey)"'
+endif
+change-recaptcha:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root option patch update cerber-recaptcha sitekey "$(apikey)"'
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root option patch update cerber-recaptcha secretkey "$(apisecret)"'
 endif

@@ -42,6 +42,7 @@ WP_LIVE_SERVER=cms.com // change for production server name
 WP_LOCAL_SERVER=cms.loc // change for local server name 
 WP_LIVE_URL=https://cms.com // change for production site url
 WP_LOCAL_URL=http://cms.loc // change for production site url
+WP_TABLE_PREFIX=prefix_
 ```
 
 ### Secrets
@@ -154,19 +155,37 @@ make down
 
 ### Change server name
 Modify local server name running make:
-ensure to set up your recaptcha and askimet key/secret for the new domain, then start WP container,
+ensure to set up your recaptcha and akismet key/secret for the new domain, then start WP container,
 once server is up, run change command, e.g.
 ```bash
 <change key/secret from WP>
 
 make up
-make change dns=newserver.com
+make change-server domain=newserver.com
 ```
 
 ### Change default admin
 Create an new user with admin privileges to replace default `cms` that will be deleted.
 ```bash
-make manager username=<username> email=<email> password=<password>
+make change-manager username=<username> email=<email> password=<password>
+```
+
+### Change options
+Change site options.
+```bash
+make change-option blogname='<blog name>' blogdesc='<blog description>'
+```
+
+### Change Akismet
+Change WP Akismet API Key.
+```bash
+make change-akismet apikey='<key>'
+```
+
+### Change Recaptcha
+Change Cerber Recaptcha API Key/Secret.
+```bash
+make change-recaptcha apikey='<key>' apisecret='<secret>'
 ```
 
 ## Database
@@ -189,8 +208,8 @@ make restore
 - Ensure to use strong passwords
 https://strongpasswordgenerator.com/
 
-- Set Askimet with your own API Key.
-Goto WP > Settings > Askimet Anti-Spam
+- Set Akismet with your own API Key.
+Goto WP > Settings > Akismet Anti-Spam
 https://akismet.com/signup/
 
 - Set Recaptcha with your own Secret/Key.
