@@ -46,14 +46,14 @@ define( 'DB_COLLATE', '' );
  *
  * @since 2.6.0
  */
-define( 'AUTH_KEY',         '');
-define( 'SECURE_AUTH_KEY',  '');
-define( 'LOGGED_IN_KEY',    '');
-define( 'NONCE_KEY',        '');
-define( 'AUTH_SALT',        '');
-define( 'SECURE_AUTH_SALT', '');
-define( 'LOGGED_IN_SALT',   '');
-define( 'NONCE_SALT',       '');
+define( 'AUTH_KEY',         '' );
+define( 'SECURE_AUTH_KEY',  '' );
+define( 'LOGGED_IN_KEY',    '' );
+define( 'NONCE_KEY',        '' );
+define( 'AUTH_SALT',        '' );
+define( 'SECURE_AUTH_SALT', '' );
+define( 'LOGGED_IN_SALT',   '' );
+define( 'NONCE_SALT',       '' );
 
 /**#@-*/
 
@@ -84,6 +84,7 @@ if (getenv( 'WORDPRESS_DEV_MODE') === 'DEV') {
 	define( 'SCRIPT_DEBUG', true );
 	define( 'SAVEQUERIES', true );
 	define( 'QM_DISABLED', false );
+	define( 'QM_ENABLE_CAPS_PANEL', true );
 	define( 'WP_LOCAL_DEV', true );
 
 	@ini_set('display_errors', 1);
@@ -94,6 +95,7 @@ if (getenv( 'WORDPRESS_DEV_MODE') === 'DEV') {
 	define( 'SCRIPT_DEBUG', false );
 	define( 'SAVEQUERIES', false );
 	define( 'QM_DISABLED', true );
+	define( 'QM_ENABLE_CAPS_PANEL', false );
 	define( 'WP_LOCAL_DEV', false );
 
 	@ini_set('display_errors', 0);

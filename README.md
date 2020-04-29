@@ -84,6 +84,29 @@ absolute path of xdebug.so, to locate it in the container run:
 find /usr/local/lib/php/extensions/ -name xdebug.so
 ```
 
+Config file launch.json for vs code.
+```json
+    "configurations": [
+        {
+            "name": "Xdebug for WP Project",
+            "type": "php",
+            "request": "launch",
+            "port": 10000,
+            "pathMappings": {
+                "/var/www/html": "${workspaceFolder}/wordpress"
+            }
+        },
+        {
+            "name": "Launch currently open script",
+            "type": "php",
+            "request": "launch", 
+            "program": "${file}", 
+            "cwd": "${fileDirname}",
+            "port": 10000 
+        }
+    ]
+```
+
 ### Apache settings
 - Modify if needed dev/deploy/apache/default.conf for unsecure connections.
 - Modify if needed dev/deploy/apache/default.ssl.conf for secure connections.
@@ -130,6 +153,18 @@ o
 make down
 ```
 
+### Change server name
+Modify local server name running make:
+ensure to set up your recaptcha and askimet key/secret for the new domain, then start WP container,
+once server is up, run change command, e.g.
+```bash
+<change key/secret from WP>
+
+make up
+make change dns=newserver.com
+```
+
+
 ## Database
 
 ### Restore
@@ -150,5 +185,10 @@ make restore
 - Ensure to use strong passwords
 https://strongpasswordgenerator.com/
 
-- Set Askimet with your own api key on WP.
+- Set Askimet with your own API Key.
+Goto WP > Settings > Askimet Anti-Spam
 https://akismet.com/signup/
+
+- Set Recaptcha with your own Secret/Key.
+Goto WP > WP Cerber > Anti-Spam > [recaptcha]
+https://www.google.com/recaptcha/
