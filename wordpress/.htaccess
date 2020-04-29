@@ -1,11 +1,20 @@
+# BEGIN WordPress
+# The directives (lines) between `BEGIN WordPress` and `END WordPress` are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
 <IfModule mod_rewrite.c>
-
 RewriteEngine On
 RewriteBase /
-
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
 
 # BEGIN WpFastestCache
 
+<IfModule mod_rewrite.c>
 RewriteCond %{HTTPS} =on
 RewriteCond %{HTTP_HOST} ^cms.loc
 
@@ -89,49 +98,38 @@ Header set Connection keep-alive
 FileETag None
 </IfModule>
 </FilesMatch>
-
+</IfModule>
 # BEGIN WpFastestCache
 
 
-# BEGIN WordPress
+# BEGIN Custom
+Options All -Indexes
 
-RewriteRule ^index\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.php [L]
-
-# END WordPress
-
-
-# BEGIN HotlinkProtection
-
-RewriteCond %{HTTP_REFERER} !^$
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?cms.loc/.*$ [NC]
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?google.com/.*$ [NC]
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?bing.com/.*$ [NC]
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yahoo.com/.*$ [NC]
-RewriteRule \.(jpg|jpeg|png|gif|svg)$ - [NC,F,L]
-
-# END HotlinkProtection
-
+<IfModule mod_rewrite.c>
+    # Protect against hotlink
+    RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?cms.loc/.*$ [NC]
+    RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?google.com/.*$ [NC]
+    RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?bing.com/.*$ [NC]
+    RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yahoo.com/.*$ [NC]
+    RewriteRule \.(jpg|jpeg|png|gif|svg)$ - [NC,F,L]
 </IfModule>
-
-
-# Secutiry headers
 
 <IfModule mod_headers.c>
     # Protect against XSS attacks
     Header set X-XSS-Protection "1; mode=block"
-
     # Protect against page-framing and click-jacking
     Header always append X-Frame-Options SAMEORIGIN
-
     # Protect against content-sniffing
 	Header set X-Content-Type-Options nosniff
-
     # Hide server information
     Header unset X-Powered-By
-
     # Force all connections over TLS
     Header always set Strict-Transport-Security "max-age=15768000; includeSubDomains; preload"
 </IfModule>
+
+<FilesMatch "^.*(debug.log|wp-config\.php|php.ini|\.[hH][tT][aA].*)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+# END Custom
