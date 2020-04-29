@@ -1,0 +1,25 @@
+/* Optimize WP tables */
+OPTIMIZE TABLE cerber_acl;
+OPTIMIZE TABLE cerber_blocks;
+OPTIMIZE TABLE cerber_countries;
+OPTIMIZE TABLE cerber_lab;
+OPTIMIZE TABLE cerber_lab_ip;
+OPTIMIZE TABLE cerber_lab_net;
+OPTIMIZE TABLE cerber_log;
+OPTIMIZE TABLE cerber_qmem;
+OPTIMIZE TABLE cerber_traffic;
+OPTIMIZE TABLE xwp_cerber_files;
+OPTIMIZE TABLE xwp_cerber_sets;
+OPTIMIZE TABLE xwp_cerber_uss;
+OPTIMIZE TABLE xwp_commentmeta;
+OPTIMIZE TABLE xwp_comments;
+OPTIMIZE TABLE xwp_links;
+OPTIMIZE TABLE xwp_options;
+OPTIMIZE TABLE xwp_postmeta;
+OPTIMIZE TABLE xwp_posts;
+OPTIMIZE TABLE xwp_term_relationships;
+OPTIMIZE TABLE xwp_term_taxonomy;
+OPTIMIZE TABLE xwp_termmeta;
+OPTIMIZE TABLE xwp_terms;
+OPTIMIZE TABLE xwp_usermeta;
+OPTIMIZE TABLE xwp_users;

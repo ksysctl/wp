@@ -25,6 +25,7 @@ setup_file=$(script_dir)/setup.sh
 live_dump=$(data_dir)/sql/live.sql
 local_dump=$(data_dir)/sql/local.sql
 clean_sql=$(data_dir)/sql/tools/clean.sql
+optimize_sql=$(data_dir)/sql/tools/optimize.sql
 
 # common args. passed to docker compose
 common_args=-f $(compose_file) --env-file $(env_file)
@@ -35,7 +36,8 @@ common_args=-f $(compose_file) --env-file $(env_file)
 	restore backup \
 	setup \
 	change-server change-manager change-option \
-	change-akismet change-recaptcha
+	change-akismet change-recaptcha \
+	clean-system update-plugins
 
 # args. for our Makefile from CLI
 domain ?= $(WP_LOCAL_SERVER)
@@ -123,6 +125,24 @@ ifdef WP_PROJECT
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option update blogdescription "$(blogdesc)"'
 endif
+clean-system:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root maintenance-mode activate'
+	@docker-compose $(common_args) exec wp sh -c \
+		'rm -Rf /var/www/html/wp-content/cache/*'
+	@cat $(clean_sql) | docker exec -i db_mysql \
+		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
+	@cat $(optimize_sql) | docker exec -i db_mysql \
+		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root maintenance-mode deactivate'
+endif
+update-plugins:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root plugin update --all'
+endif
 change-akismet:
 ifdef WP_PROJECT
 	@docker-compose $(common_args) exec wp sh -c \
@@ -134,16 +154,4 @@ ifdef WP_PROJECT
 		'wp --allow-root option patch update cerber-recaptcha sitekey "$(apikey)"'
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option patch update cerber-recaptcha secretkey "$(apisecret)"'
-endif
-clean-system:
-ifdef WP_PROJECT
-	@docker-compose $(common_args) exec wp sh -c \
-		'rm -Rf /var/www/html/wp-content/cache/*'
-	@cat $(clean_sql) | docker exec -i db_mysql \
-		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
-endif
-update-plugins:
-ifdef WP_PROJECT
-	@docker-compose $(common_args) exec wp sh -c \
-		'wp --allow-root plugin update --all'
 endif
