@@ -1,7 +1,7 @@
 # Database content
 data/db/*
 data/backup/*
-data/sql/*
+data/sql/*.sql
 
 # Config files
 .env

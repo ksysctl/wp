@@ -188,6 +188,18 @@ Change Cerber Recaptcha API Key/Secret.
 make change-recaptcha apikey='<key>' apisecret='<secret>'
 ```
 
+### Clean system
+Clean tmp files, cache, database tables, it removes pending, trashed, auto-draft, orphaned posts/comments, etc.
+```bash
+make clean-system
+```
+
+### Update plugins
+Update all available plugins.
+```bash
+make clean-system
+```
+
 ## Database
 
 ### Restore
@@ -209,9 +221,9 @@ make restore
 https://strongpasswordgenerator.com/
 
 - Set Akismet with your own API Key.
-Goto WP > Settings > Akismet Anti-Spam
+Goto WP > Settings > Akismet Anti-Spam or from CLI `make change-akismet`
 https://akismet.com/signup/
 
 - Set Recaptcha with your own Secret/Key.
 Goto WP > WP Cerber > Anti-Spam > [recaptcha]
-https://www.google.com/recaptcha/
+https://www.google.com/recaptcha/ or from CLI `make change-recaptcha`

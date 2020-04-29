@@ -24,6 +24,7 @@ docker_file=$(build_dir)/Dockerfile
 setup_file=$(script_dir)/setup.sh
 live_dump=$(data_dir)/sql/live.sql
 local_dump=$(data_dir)/sql/local.sql
+clean_sql=$(data_dir)/sql/tools/clean.sql
 
 # common args. passed to docker compose
 common_args=-f $(compose_file) --env-file $(env_file)
@@ -133,4 +134,16 @@ ifdef WP_PROJECT
 		'wp --allow-root option patch update cerber-recaptcha sitekey "$(apikey)"'
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option patch update cerber-recaptcha secretkey "$(apisecret)"'
+endif
+clean-system:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'rm -Rf /var/www/html/wp-content/cache/*'
+	@cat $(clean_sql) | docker exec -i db_mysql \
+		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
+endif
+update-plugins:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root plugin update --all'
 endif
