@@ -10,6 +10,7 @@ A WP Docker Project.
 By default your WP admin can be accesed from:
 https://cms.loc/mngr
 
+Default username/pass: ```cms/cms```
 
 ## Setup
 Run setup to initialize project, it will create an .env file in dev/deploy, it does not overwrite .env if already exists. Setup creates structure to handle DB files, and an entry to resolve your local server name.
@@ -36,8 +37,6 @@ WP_CONTAINER=wp_container_name
 WP_PORT=80
 WP_PORT_HTTPS=443
 WP_DEV_MODE=DEV // set DEV to run in dev mode otherwise type anything for now e.g. PRODUCTION
-WP_USERNAME=wp_username
-WP_PASSWORD=wp_password
 WP_PROJECT=wp_title
 WP_LIVE_SERVER=cms.com // change for production server name 
 WP_LOCAL_SERVER=cms.loc // change for local server name 
@@ -71,7 +70,7 @@ dev/deploy/xdebug.ini
 ```
 
 ensure that XDEBUG_ENABLED is set as 1 if you want to enable xdebug, also uncomment:
-```php.ini
+```ini
 ;zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20180731/xdebug.so
 ;xdebug.remote_enable=1
 ;xdebug.remote_autostart=1
@@ -164,6 +163,11 @@ make up
 make change dns=newserver.com
 ```
 
+### Change default admin
+Create an new user with admin privileges to replace default `cms` that will be deleted.
+```bash
+make manager username=<username> email=<email> password=<password>
+```
 
 ## Database
 

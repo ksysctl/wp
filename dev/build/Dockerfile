@@ -33,4 +33,10 @@ COPY dev/deploy/apache/http.conf \
 RUN curl -s -o /usr/local/bin/wp ${WP_CLI_URL} \
     && chmod +x /usr/local/bin/wp
 
+# Clean up
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    rm /var/log/lastlog /var/log/faillog && \
+    rm /var/log/apt/term.log /var/log/apt/history.log 
+
 EXPOSE 10000 80 443

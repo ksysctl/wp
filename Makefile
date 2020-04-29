@@ -32,10 +32,13 @@ common_args=-f $(compose_file) --env-file $(env_file)
 .PHONY: build rebuild up down \
 	logs shell \
 	restore backup \
-	setup change
+	setup change manager
 
 # args. for our Makefile from CLI
 dns ?= $(WP_LOCAL_SERVER)
+username ?= ''
+email ?= ''
+password ?= ''
 
 # targets
 all: build
@@ -85,7 +88,7 @@ endif
 change:
 ifdef WP_PROJECT
 	@docker-compose $(common_args) exec wp sh -c \
-		'wp --allow-root search-replace ${WP_LOCAL_SERVER} ${dns} --skip-columns=guid'
+		'wp --allow-root search-replace $(WP_LOCAL_SERVER) $(dns) --skip-columns=guid'
 	@docker-compose $(common_args) exec wp sh -c \
 		'rm -Rf /var/www/html/wp-content/cache/*'
 	@docker-compose $(common_args) down
@@ -96,4 +99,11 @@ ifdef WP_PROJECT
 	sudo sh -c "sed -i \"\" 's/127.0.0.1	$(WP_LOCAL_SERVER)/127.0.0.1	$(dns)/g' /etc/hosts"
 	
 	@docker-compose $(common_args) up --build --remove-orphans
+endif
+manager:
+ifdef WP_PROJECT
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root user create $(username) $(email) --user_pass=$(password) --role=administrator --porcelain'
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root user delete cms --yes'
 endif
