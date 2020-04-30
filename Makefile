@@ -50,8 +50,9 @@ email ?= ''
 password ?= ''
 blogname ?= $(WP_PROJECT)
 blogdesc ?= ''
-apikey ?= ''
-apisecret ?= ''
+akismet_key ?= $(WP_AKISMET_KEY)
+recaptcha_key ?= $(WP_RECAPTCHA_KEY)
+recaptcha_secret ?= $(WP_RECAPTCHA_SECRET)
 
 # targets
 all: build
@@ -165,16 +166,16 @@ change-akismet:
 ifdef WP_PROJECT
 	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
-		'wp --allow-root option update wordpress_api_key "$(apikey)"'
-	@sed -i "" -E 's/WP_AKISMET_KEY=$(regex_str)/WP_AKISMET_KEY=$(apikey)/g' dev/deploy/.env
+		'wp --allow-root option update wordpress_api_key "$(akismet_key)"'
+	@sed -i "" -E 's/WP_AKISMET_KEY=$(regex_str)/WP_AKISMET_KEY=$(akismet_key)/g' dev/deploy/.env
 endif
 change-recaptcha:
 ifdef WP_PROJECT
 	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
-		'wp --allow-root option patch update cerber-recaptcha sitekey "$(apikey)"'
-	@sed -i "" -E 's/WP_RECAPTCHA_KEY=$(regex_str)/WP_RECAPTCHA_KEY=$(apikey)/g' dev/deploy/.env
+		'wp --allow-root option patch update cerber-recaptcha sitekey "$(recaptcha_key)"'
+	@sed -i "" -E 's/WP_RECAPTCHA_KEY=$(regex_str)/WP_RECAPTCHA_KEY=$(recaptcha_key)/g' dev/deploy/.env
 	@docker-compose $(common_args) exec wp sh -c \
-		'wp --allow-root option patch update cerber-recaptcha secretkey "$(apisecret)"'
-	@sed -i "" -E 's/WP_RECAPTCHA_SECRET=$(regex_str)/WP_RECAPTCHA_SECRET=$(apisecret)/g' dev/deploy/.env
+		'wp --allow-root option patch update cerber-recaptcha secretkey "$(recaptcha_secret)"'
+	@sed -i "" -E 's/WP_RECAPTCHA_SECRET=$(regex_str)/WP_RECAPTCHA_SECRET=$(recaptcha_secret)/g' dev/deploy/.env
 endif

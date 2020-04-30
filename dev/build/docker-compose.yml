@@ -24,6 +24,8 @@ services:
     container_name: ${WP_CONTAINER}
     build:
         context: ../../
+        args:
+            - PHP_EXTENSION_XDEBUG=${XDEBUG_ENABLED}
         dockerfile: ${WP_DOCKER}
     ports:
         - ${WP_PORT}:${WP_PORT}
@@ -43,10 +45,8 @@ services:
         - WORDPRESS_LOGGED_IN_SALT=${WP_LOGGED_IN_SALT}
         - WORDPRESS_NONCE_SALT=${WP_NONCE_SALT}
         - WORDPRESS_TABLE_PREFIX=${WP_TABLE_PREFIX}
-        - PHP_EXTENSION_XDEBUG=${XDEBUG_ENABLED}
     volumes:
         - ${WP_ROOT}:/var/www/html:rw
         - ${PHP_CONFIG}:/usr/local/etc/php/conf.d/conf.ini:rw
-        - ${XDEBUG_CONFIG}:/usr/local/etc/php/conf.d/xdebug.ini:rw
     depends_on:
         - db

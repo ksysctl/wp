@@ -65,23 +65,24 @@ Modify PHP settings if needed:
 dev/deploy/php.ini
 ```
 
-Modify XDEBUG settings if needed:
+Modify XDEBUG setting if you need to enable/disable it:
 ```
 dev/deploy/xdebug.ini
 ```
 
-ensure that XDEBUG_ENABLED is set as 1 if you want to enable xdebug, also uncomment:
+change localhost with your host ip, use ifconfig|ipconfig to get it.
 ```ini
-;zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20180731/xdebug.so
-;xdebug.remote_enable=1
-;xdebug.remote_autostart=1
-;xdebug.remote_host=192.168.1.3
+xdebug.remote_host=localhost
 ```
 
-set remote_host with your host internal ip and zend_extension with
-absolute path of xdebug.so, to locate it in the container run:
+if you need to enable it, set XDEBUG_ENABLED as 1 in your .env file.
+```env
+XDEBUG_ENABLED=0
+```
+
+and build image.
 ```bash
-find /usr/local/lib/php/extensions/ -name xdebug.so
+make build
 ```
 
 Config file launch.json for vs code.
@@ -175,13 +176,21 @@ make change-option blogname='<blog name>' blogdesc='<blog description>'
 ### Change Akismet
 Change WP Akismet API Key.
 ```bash
-make change-akismet apikey='<key>'
+make change-akismet akismet_key='<key>'
+```
+if new value is stored in .env then skip akismet_key parameter.
+```bash
+make change-akismet
 ```
 
 ### Change Recaptcha
 Change Cerber Recaptcha API Key/Secret.
 ```bash
-make change-recaptcha apikey='<key>' apisecret='<secret>'
+make change-recaptcha recaptcha_key='<key>' recaptcha_secret='<secret>'
+```
+if new values are stored in .env then skip recaptcha key|recaptcha secret parameter.
+```bash
+make change-akismet
 ```
 
 ### Clean system
@@ -193,7 +202,7 @@ make clean-system
 ### Update plugins
 Update all available plugins.
 ```bash
-make clean-system
+make update-plugins
 ```
 
 ## Database
