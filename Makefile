@@ -54,6 +54,18 @@ akismet_key ?= $(WP_AKISMET_KEY)
 recaptcha_key ?= $(WP_RECAPTCHA_KEY)
 recaptcha_secret ?= $(WP_RECAPTCHA_SECRET)
 
+# function: wait db service is up
+define wait_dbservice
+	@docker-compose $(common_args) up -d
+	@while [ ! "$$(docker ps -q -f name=$(DB_CONTAINER))" ] ; do sleep 1; done;
+	@while [ ! \
+		"$$(docker exec -i $(DB_CONTAINER) \
+			mysqladmin --user=root --password=$(DB_ROOT_PASSWORD) --host 127.0.0.1 ping --silent)" \
+		] ; do \
+		sleep 1; \
+	done;
+endef
+
 # targets
 all: build
 build:
@@ -74,18 +86,18 @@ ifdef WP_PROJECT
 endif
 logs:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) --verbose logs -f
 endif
 shell:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker exec -it wp_webserver bash
 endif
 restore:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
-	@cat $(live_dump) | docker exec -i db_mysql \
+	$(call wait_dbservice)
+	@cat $(live_dump) | docker exec -i $(DB_CONTAINER) \
 		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
 	
 	@docker-compose $(common_args) exec wp sh -c \
@@ -93,7 +105,7 @@ ifdef WP_PROJECT
 endif
 backup:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec db sh -c \
 		'exec mysqldump $(DB_NAME) -uroot -p$(DB_ROOT_PASSWORD)' > $(local_dump)
 
@@ -105,7 +117,7 @@ ifndef WP_PROJECT
 endif
 change-server:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root maintenance-mode activate'
 	@docker-compose $(common_args) exec wp sh -c \
@@ -125,7 +137,7 @@ ifdef WP_PROJECT
 endif
 change-manager:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root user create $(username) $(email) --user_pass=$(password) --role=administrator --porcelain'
 	@docker-compose $(common_args) exec wp sh -c \
@@ -135,7 +147,7 @@ ifdef WP_PROJECT
 endif
 change-option:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option update blogname "$(blogname)"'
 	@sed -i "" -E 's/WP_PROJECT=$(regex_strx)/WP_PROJECT=$(blogname)/g' dev/deploy/.env
@@ -144,34 +156,34 @@ ifdef WP_PROJECT
 endif
 clean-system:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root maintenance-mode activate'
 	@docker-compose $(common_args) exec wp sh -c \
 		'rm -Rf /var/www/html/wp-content/cache/*'
-	@cat $(clean_sql) | docker exec -i db_mysql \
+	@cat $(clean_sql) | docker exec -i $(DB_CONTAINER) \
 		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
-	@cat $(optimize_sql) | docker exec -i db_mysql \
+	@cat $(optimize_sql) | docker exec -i $(DB_CONTAINER) \
 		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root maintenance-mode deactivate'
 endif
 update-plugins:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root plugin update --all'
 endif
 change-akismet:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option update wordpress_api_key "$(akismet_key)"'
 	@sed -i "" -E 's/WP_AKISMET_KEY=$(regex_str)/WP_AKISMET_KEY=$(akismet_key)/g' dev/deploy/.env
 endif
 change-recaptcha:
 ifdef WP_PROJECT
-	@docker-compose $(common_args) up -d
+	$(call wait_dbservice)
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option patch update cerber-recaptcha sitekey "$(recaptcha_key)"'
 	@sed -i "" -E 's/WP_RECAPTCHA_KEY=$(regex_str)/WP_RECAPTCHA_KEY=$(recaptcha_key)/g' dev/deploy/.env
