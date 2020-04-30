@@ -92,7 +92,7 @@ endif
 shell:
 ifdef WP_PROJECT
 	$(call wait_dbservice)
-	@docker exec -it wp_webserver bash
+	@docker exec -it $(WP_CONTAINER) bash
 endif
 restore:
 ifdef WP_PROJECT

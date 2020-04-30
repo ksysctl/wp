@@ -50,3 +50,13 @@ services:
         - ${PHP_CONFIG}:/usr/local/etc/php/conf.d/conf.ini:rw
     depends_on:
         - db
+        - mc
+  mc:
+    image: schickling/mailcatcher
+    container_name: ${MC_CONTAINER}
+    ports:
+        - ${MC_PORT}:${MC_PORT}
+        - ${SMTP_PORT}:${SMTP_PORT}
+    environment:
+        - MAILCATCHER_PORT_1025_TCP_ADDR=${SMTP_PORT}
+    restart: on-failure:10

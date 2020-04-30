@@ -7,10 +7,16 @@ A WP Docker Project.
 - [Docker compose](https://docs.docker.com/compose/install/)
 - [Git](https://git-scm.com/downloads)
 
-By default your WP admin can be accesed from:
-https://cms.loc/mngr
 
+- WP admin
+By default your WP admin can be accesed from
+https://cms.loc/mngr
 Default username/pass: ```cms/cms```
+
+- Mailcatcher UI:
+Mailcatcher panel can be accesed from:
+http://cms.loc:1080
+
 
 ## Setup
 Run setup to initialize project, it will create an .env file in dev/deploy, it does not overwrite .env if already exists. Setup creates structure to handle DB files, and an entry to resolve your local server name.

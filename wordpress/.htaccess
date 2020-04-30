@@ -112,6 +112,7 @@ Options All -Indexes
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?google.com/.*$ [NC]
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?bing.com/.*$ [NC]
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yahoo.com/.*$ [NC]
+    RewriteCond !^http://(www\.)?com.loc:1080/.*$ [NC]
     RewriteRule \.(jpg|jpeg|png|gif|svg)$ - [NC,F,L]
 </IfModule>
 
