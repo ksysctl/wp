@@ -27,6 +27,10 @@ local_dump=$(data_dir)/sql/local.sql
 clean_sql=$(data_dir)/sql/tools/clean.sql
 optimize_sql=$(data_dir)/sql/tools/optimize.sql
 
+# regex string substitution
+regex_str=([a-zA-Z0-9+]?.*)
+regex_strx=([_a-zA-Z0-9+]?.*)
+
 # common args. passed to docker compose
 common_args=-f $(compose_file) --env-file $(env_file)
 
@@ -69,14 +73,17 @@ ifdef WP_PROJECT
 endif
 logs:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) --verbose logs -f
 endif
 shell:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker exec -it wp_webserver bash
 endif
 restore:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@cat $(live_dump) | docker exec -i db_mysql \
 		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
 	
@@ -85,6 +92,7 @@ ifdef WP_PROJECT
 endif
 backup:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec db sh -c \
 		'exec mysqldump $(DB_NAME) -uroot -p$(DB_ROOT_PASSWORD)' > $(local_dump)
 
@@ -96,21 +104,27 @@ ifndef WP_PROJECT
 endif
 change-server:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root maintenance-mode activate'
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root search-replace $(WP_LOCAL_SERVER) $(domain) --skip-columns=guid'
 	@docker-compose $(common_args) exec wp sh -c \
 		'rm -Rf /var/www/html/wp-content/cache/*'
+	@docker-compose $(common_args) exec wp sh -c \
+		'wp --allow-root maintenance-mode deactivate'
 	@docker-compose $(common_args) down
 
 	sed -i "" 's/$(WP_LOCAL_SERVER)/$(domain)/g' dev/deploy/.env
 	sed -i "" 's/$(WP_LOCAL_SERVER)/$(domain)/g' dev/deploy/apache/default.conf
 	sed -i "" 's/$(WP_LOCAL_SERVER)/$(domain)/g' wordpress/.htaccess
 	sudo sh -c "sed -i \"\" 's/127.0.0.1	$(WP_LOCAL_SERVER)/127.0.0.1	$(domain)/g' /etc/hosts"
-	
+
 	@docker-compose $(common_args) up --build --remove-orphans
 endif
 change-manager:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root user create $(username) $(email) --user_pass=$(password) --role=administrator --porcelain'
 	@docker-compose $(common_args) exec wp sh -c \
@@ -120,13 +134,16 @@ ifdef WP_PROJECT
 endif
 change-option:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option update blogname "$(blogname)"'
+	@sed -i "" -E 's/WP_PROJECT=$(regex_strx)/WP_PROJECT=$(blogname)/g' dev/deploy/.env
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option update blogdescription "$(blogdesc)"'
 endif
 clean-system:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root maintenance-mode activate'
 	@docker-compose $(common_args) exec wp sh -c \
@@ -140,18 +157,24 @@ ifdef WP_PROJECT
 endif
 update-plugins:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root plugin update --all'
 endif
 change-akismet:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option update wordpress_api_key "$(apikey)"'
+	@sed -i "" -E 's/WP_AKISMET_KEY=$(regex_str)/WP_AKISMET_KEY=$(apikey)/g' dev/deploy/.env
 endif
 change-recaptcha:
 ifdef WP_PROJECT
+	@docker-compose $(common_args) up -d
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option patch update cerber-recaptcha sitekey "$(apikey)"'
+	@sed -i "" -E 's/WP_RECAPTCHA_KEY=$(regex_str)/WP_RECAPTCHA_KEY=$(apikey)/g' dev/deploy/.env
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root option patch update cerber-recaptcha secretkey "$(apisecret)"'
+	@sed -i "" -E 's/WP_RECAPTCHA_SECRET=$(regex_str)/WP_RECAPTCHA_SECRET=$(apisecret)/g' dev/deploy/.env
 endif

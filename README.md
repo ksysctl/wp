@@ -155,12 +155,8 @@ make down
 
 ### Change server name
 Modify local server name running make:
-ensure to set up your recaptcha and akismet key/secret for the new domain, then start WP container,
-once server is up, run change command, e.g.
+ensure to set up your recaptcha and akismet key/secret for the new domain in .env.
 ```bash
-<change key/secret from WP>
-
-make up
 make change-server domain=newserver.com
 ```
 
@@ -225,5 +221,5 @@ Goto WP > Settings > Akismet Anti-Spam or from CLI `make change-akismet`
 https://akismet.com/signup/
 
 - Set Recaptcha with your own Secret/Key.
-Goto WP > WP Cerber > Anti-Spam > [recaptcha]
+Goto WP > WP Cerber > Anti-Spam > recaptcha
 https://www.google.com/recaptcha/ or from CLI `make change-recaptcha`
