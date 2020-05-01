@@ -40,9 +40,9 @@ common_args=-f $(compose_file) --env-file $(env_file)
 	logs shell \
 	restore backup \
 	setup \
-	change-server change-manager change-option \
+	change-server change-manager \
+	clean-system change-option update-plugins \
 	change-akismet change-recaptcha \
-	clean-system update-plugins \
 	mail-set mail-smtp
 
 # args. for our Makefile from CLI
@@ -145,16 +145,11 @@ ifdef WP_PROJECT
 	$(call wait_db_service)
 	@docker-compose $(common_args) exec wp sh -c '\
 		wp --allow-root user create $(username) $(email) --user_pass=$(password) --role=administrator --porcelain; \
+		wp --allow-root option update clean-up-optimizer-admin-email "$(email)"; \
+		wp --allow-root option update admin_email "$(email)"; \
+		wp --allow-root option update new_admin_email "$(email)"; \
 		wp --allow-root user session destroy cms --all; \
 		wp --allow-root user delete cms --yes;'
-endif
-change-option:
-ifdef WP_PROJECT
-	$(call wait_db_service)
-	@docker-compose $(common_args) exec wp sh -c '\
-		wp --allow-root option update blogname "$(blogname)"; \
-		wp --allow-root option update blogdescription "$(blogdesc)";'
-	@sed -i "" -E 's/WP_PROJECT=$(regex_strx)/WP_PROJECT=$(blogname)/g' dev/deploy/.env
 endif
 clean-system:
 ifdef WP_PROJECT
@@ -168,6 +163,14 @@ ifdef WP_PROJECT
 		mysql -uroot -p$(DB_ROOT_PASSWORD) $(DB_NAME) >/dev/null
 	@docker-compose $(common_args) exec wp sh -c \
 		'wp --allow-root maintenance-mode deactivate;'
+endif
+change-option:
+ifdef WP_PROJECT
+	$(call wait_db_service)
+	@docker-compose $(common_args) exec wp sh -c '\
+		wp --allow-root option update blogname "$(blogname)"; \
+		wp --allow-root option update blogdescription "$(blogdesc)";'
+	@sed -i "" -E 's/WP_PROJECT=$(regex_strx)/WP_PROJECT=$(blogname)/g' dev/deploy/.env
 endif
 update-plugins:
 ifdef WP_PROJECT

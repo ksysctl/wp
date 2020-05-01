@@ -12,6 +12,9 @@ cp  ${deploy_dir}/.env.template ${deploy_dir}/.env
 echo "Creating directories in ${database_dir}/* for DB > "
 mkdir -p ${database_dir}/db ${database_dir}/backup
 
+echo "Copying customized database to ${database_dir}/sql > "
+cp ${database_dir}/default.sql ${database_dir}/sql/live.sql
+
 echo "Updating local /etc/hosts..."
 if ! grep -q ${server} ${hosts_file} ; then
 	sudo sh -c "echo '127.0.0.1	${server}' >> ${hosts_file}"
