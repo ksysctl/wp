@@ -69,6 +69,8 @@ make build
 make restore
 ```
 
+- [ ] *Remember [change](#plugins) akismet/recaptcha keys, defaults provided are for local environment use.*
+
 # Docker 
 Use Makefile to manage your images and containers.
 
