@@ -7,6 +7,7 @@ A WP Docker Project.
 - [Docker compose](https://docs.docker.com/compose/install/)
 - [Git](https://git-scm.com/downloads)
 
+- State: ```experimental```
 
 - WP admin
 By default your WP admin can be accesed from
@@ -51,6 +52,12 @@ WP_LOCAL_URL=http://cms.loc // change for production site url
 WP_TABLE_PREFIX=prefix_
 ```
 
+### Mailcatcher
+```env
+MC_CONTAINER=mc_mailcatcher
+MC_PORT=1080
+```
+
 ### Secrets
 Generates WP unique keys and salts from
 https://api.wordpress.org/secret-key/1.1/salt/
@@ -63,6 +70,31 @@ WP_AUTH_SALT=
 WP_SECURE_AUTH_SALT=
 WP_LOGGED_IN_SALT=
 WP_NONCE_SALT=
+```
+
+### Plugins
+```env
+WP_AKISMET_KEY=
+WP_RECAPTCHA_KEY=
+WP_RECAPTCHA_SECRET=
+```
+
+# Mail
+```env
+MAIL_FROM=cms@cms.loc
+MAIL_NAME=WP Mailer
+MAIL_MAILER=smtp
+```
+
+# SMTP settings
+```env
+SMTP_HOST=mc
+SMTP_PORT=1025
+SMTP_AUTO_TLS=0
+SMTP_AUTH=0
+SMTP_ENCRYPTION=none
+SMTP_USER=
+SMTP_PASS=
 ```
 
 ### PHP settings
@@ -179,7 +211,7 @@ Change site options.
 make change-option blogname='<blog name>' blogdesc='<blog description>'
 ```
 
-### Change Akismet
+### Change akismet
 Change WP Akismet API Key.
 ```bash
 make change-akismet akismet_key='<key>'
@@ -189,7 +221,7 @@ if new value is stored in .env then skip akismet_key parameter.
 make change-akismet
 ```
 
-### Change Recaptcha
+### Change recaptcha
 Change Cerber Recaptcha API Key/Secret.
 ```bash
 make change-recaptcha recaptcha_key='<key>' recaptcha_secret='<secret>'
@@ -209,6 +241,18 @@ make clean-system
 Update all available plugins.
 ```bash
 make update-plugins
+```
+
+### Update mail
+Update mail service settings.
+```bash
+make mail-set
+```
+
+### Update smtp
+Update smtp settings.
+```bash
+make amil-smtp
 ```
 
 ## Database
