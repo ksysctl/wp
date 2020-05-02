@@ -1,6 +1,35 @@
 # WP Docker Project
 A Wordpress Docker Project.
 
+- [Getting started](#getting-started)
+  * [Requirements](#requirements)
+  * [Setup](#setup)
+    + [Create Project Env](#create-project-env)
+    + [Customize Project Env](#customize-project-env)
+      - [Secrets](#secrets)
+      - [PHP](#php)
+  * [Build](#build)
+- [Docker](#docker)
+    + [Build](#build-1)
+    + [Logs](#logs)
+    + [Shell](#shell)
+    + [Up/Down](#up-down)
+- [Database](#database)
+  * [Restore](#restore)
+  * [Backup](#backup)
+- [Develop tools](#develop-tools)
+  * [XDebug](#xdebug)
+- [Customize](#customize)
+    + [Change options](#change-options)
+    + [Change admin](#change-admin)
+    + [Clean system](#clean-system)
+    + [Update mail](#update-mail)
+    + [Update smtp](#update-smtp)
+    + [Change server](#change-dns)
+    + [Plugins](#plugins)
+      - [Change akismet](#change-akismet)
+      - [Change recaptcha](#change-recaptcha)
+
 # Getting started
 ## Requirements
 - [Docker](https://docs.docker.com/engine/installation/)
@@ -100,7 +129,7 @@ Run *shell* to access to the container:
 make shell
 ```
 
-### Up/Down
+### Up Down
 Run *up/down* to start/stop container:
 ```bash
 make up
@@ -160,7 +189,7 @@ Change site options.
 make change-option blogname='<blog name>' blogdesc='<blog description>'
 ```
 
-### Change default admin
+### Change admin
 Create a new user with admin privileges, it replaces default `cms` that will be deleted.
 ```bash
 make change-manager username='<username>' email='<email>' password='<password>'
@@ -184,17 +213,18 @@ Update smtp settings.
 make mail-smtp
 ```
 
-### Server name
+### Change DNS
 Modify local server name running, ensure to set up your *recaptcha* and *akismet* key/secret for the new domain in ```.env```.
 ```bash
 make change-server domain='<new dns>'
 ```
 
-#### Apache
-- Modify if needed ```dev/deploy/apache/default.conf``` for unsecure connections.
-- Modify if needed ```dev/deploy/apache/default.ssl.conf``` for secure connections.
-- Modify if needed ```dev/deploy/apache/security.conf``` for security settings.
-- Modify if needed ```dev/deploy/apache/http.conf``` for global settings.
+Modify if needed:
+
+- ```dev/deploy/apache/default.conf``` for unsecure connections.
+- ```dev/deploy/apache/default.ssl.conf``` for secure connections.
+- ```dev/deploy/apache/security.conf``` for security settings.
+- ```dev/deploy/apache/http.conf``` for global settings.
 ```bash
 make build
 ```
@@ -208,7 +238,7 @@ WP_RECAPTCHA_KEY=
 WP_RECAPTCHA_SECRET=
 ```
 
-#### Akismet
+#### Change akismet
 Changes akismet key.
 ```bash
 make change-akismet akismet_key='<key>'
@@ -218,7 +248,7 @@ if new value is stored in .env then skip akismet_key parameter.
 make change-akismet
 ```
 
-#### Recaptcha
+#### Change recaptcha
 Change cerber recaptcha key/secret.
 ```bash
 make change-recaptcha recaptcha_key='<key>' recaptcha_secret='<secret>'
