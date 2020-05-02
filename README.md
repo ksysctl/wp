@@ -1,5 +1,5 @@
-# WP
-A WP Docker Project.
+# WP Docker Project
+A Wordpress Docker Project.
 
 # Getting started
 ## Requirements
@@ -7,27 +7,31 @@ A WP Docker Project.
 - [Docker compose](https://docs.docker.com/compose/install/)
 - [Git](https://git-scm.com/downloads)
 
-- State: ```Experimental```
-
-- WP admin
-By default your WP admin can be accesed from
-https://cms.loc/mngr
-Default username/pass: ```cms/cms```
-
-- Mailcatcher UI:
-Mailcatcher panel can be accesed from:
-http://cms.loc:1080
-
+Installed plugins:
+- [ ] Advanced Custom Fields [5.8.9](https://www.advancedcustomfields.com/).
+- [ ] Advanced DB Cleaner [3.0.0](https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner).
+- [ ] Akismet Anti-Spam [4.1.5](https://akismet.com/).
+- [ ] Polylang [2.7.2](https://polylang.pro).
+- [ ] Query Monitor [3.5.2](https://github.com/johnbillion/query-monitor)
+- [ ] WP Cerber Security [8.6.3](https://wpcerber.com).
+- [ ] WP Fastest Cache [0.9.0.5](http://wordpress.org/plugins/wp-fastest-cache/).
+- [ ] WP Mail SMTP [2.0.0](https://wpmailsmtp.com/).
 
 ## Setup
-Run setup to initialize project, it will create an .env file in dev/deploy, it does not overwrite .env if already exists. Setup creates structure to handle DB files, modifies /etc/hosts to resolve your local server name.
-```env
+  * WP Panel: username/password```cms/cms```, accessed from [cms.loc/mngr](https://cms.loc/mngr)
+  * Mailcatcher UI: acceded from [cms.loc:1080](http://cms.loc:1080)
+
+### Create Project Env
+1. Create Run setup to initialize project, it will create a ```.env``` file in ```dev/deploy```, it does not overwrite ```.env``` if already exists. Setup creates structure to handle DB files, modifies ```/etc/hosts``` to resolve your local server name.
+```bash
+git clone git@github.com:ksysctl/wp.git myproject
+cd myproject
 make setup
 ```
+### Customize Project Env
+2. Before starting to build the project, modify the recently generated ```.env```:
 
-Before starting to build the project, modify the recently generated .env:
-
-### Secrets
+#### Secrets
 Generates WP keys/salts from:
 https://api.wordpress.org/secret-key/1.1/salt/
 ```env
@@ -41,29 +45,29 @@ WP_LOGGED_IN_SALT=
 WP_NONCE_SALT=
 ```
 
-### PHP settings
+#### PHP
 Modify PHP settings if needed:
 ```
 dev/deploy/php.ini
 ```
 
-Modify XDEBUG setting if you need to enable/disable it:
+Modify XDEBUG settings if you need to enable/disable it:
 ```
 dev/deploy/xdebug.ini
 ```
 
-change localhost with your host ip, use ifconfig|ipconfig to get it.
+Change localhost with your host IP, use ifconfig|ipconfig to get it.
 ```ini
 xdebug.remote_host=localhost
 ```
 
-if you need to enable it, set XDEBUG_ENABLED as 1 in your .env file.
+If you need to enable it, set XDEBUG_ENABLED as 1 in your ```.env``` file.
 ```env
 XDEBUG_ENABLED=0
 ```
 
-## Build & intialize
-finally build the image and import customized database.
+## Build
+3. Build the image and import customized database.
 ```bash
 make build
 make restore
@@ -75,7 +79,7 @@ make restore
 Use Makefile to manage your images and containers.
 
 ### Build
-Run build to initialize WP/DB, ensure that .env exists:
+Run *build/rebuild* to initialize WP/DB, ensure that ```.env``` exists:
 ```bash
 make build
 ```
@@ -85,20 +89,19 @@ make rebuild
 ```
 
 ### Logs
-Run logs to show container logs, also, for specific WP logs can be found at wp-content/debug.log
-if WORDPRESS_DEV_MODE is enabled (set as DEV), to see it enter to the container:
+Run *logs* to show container logs, if ```WORDPRESS_DEV_MODE``` is set as ```DEV```, wordpress logs can be found at ```wp-content/debug.log```:
 ```bash
 make logs
 ```
 
 ### Shell
-Run shell to access to the container:
+Run *shell* to access to the container:
 ```bash
 make shell
 ```
 
 ### Up/Down
-Run up/down actions to start/stop container:
+Run *up/down* to start/stop container:
 ```bash
 make up
 ```
@@ -110,14 +113,14 @@ make down
 # Database
 
 ## Restore
-Restore DB from live, loads an live.sql dump file in data/sql:
-fixes urls in WP to use local dump imported from live
+Restores DB from live and fixes urls, it loads a ```live.sql``` dump file stored in ```data/sql```:
+
 ```bash
 make restore
 ```
 
 ## Backup
-Backup local DB, exports an local.sql dump file in data/sql:
+Creates a backup, exports a ```local.sql``` dump file in ```data/sql```:
 ```bash
 make restore
 ```
@@ -125,7 +128,7 @@ make restore
 # Develop tools
 
 ## XDebug
-Config file launch.json for vs code.
+Config file launch.json for *VS Code*.
 ```json
     "configurations": [
         {
@@ -158,13 +161,13 @@ make change-option blogname='<blog name>' blogdesc='<blog description>'
 ```
 
 ### Change default admin
-Create an new user with admin privileges to replace default `cms` that will be deleted.
+Create a new user with admin privileges, it replaces default `cms` that will be deleted.
 ```bash
-make change-manager username=<username> email=<email> password=<password>
+make change-manager username='<username>' email='<email>' password='<password>'
 ```
 
 ### Clean system
-Clean tmp files, cache, database tables, it removes pending, trashed, auto-draft, orphaned posts/comments, etc.
+Clean temporal files, cache, database tables, it removes pending, trashed, auto-draft, orphaned posts/comments, etc.
 ```bash
 make clean-system
 ```
@@ -182,32 +185,31 @@ make mail-smtp
 ```
 
 ### Server name
-Modify local server name running make:
-ensure to set up your recaptcha and akismet key/secret for the new domain in .env.
+Modify local server name running, ensure to set up your *recaptcha* and *akismet* key/secret for the new domain in ```.env```.
 ```bash
-make change-server domain=newserver.com
+make change-server domain='<new dns>'
 ```
 
 #### Apache
-- Modify if needed dev/deploy/apache/default.conf for unsecure connections.
-- Modify if needed dev/deploy/apache/default.ssl.conf for secure connections.
-- Modify if needed dev/deploy/apache/security.conf for secutiry settings.
-- Modify if needed dev/deploy/apache/http.conf for global settings.
+- Modify if needed ```dev/deploy/apache/default.conf``` for unsecure connections.
+- Modify if needed ```dev/deploy/apache/default.ssl.conf``` for secure connections.
+- Modify if needed ```dev/deploy/apache/security.conf``` for security settings.
+- Modify if needed ```dev/deploy/apache/http.conf``` for global settings.
 ```bash
 make build
 ```
 
 ### Plugins
-Generates keys/secrets from:
-https://akismet.com/signup/
-https://www.google.com/recaptcha/
+Generate keys/secrets from [akismet.com](https://akismet.com/signup/) | [recaptcha](https://www.google.com/recaptcha/):
+
 ```env
 WP_AKISMET_KEY=
 WP_RECAPTCHA_KEY=
 WP_RECAPTCHA_SECRET=
 ```
 
-#### Akismet.
+#### Akismet
+Changes akismet key.
 ```bash
 make change-akismet akismet_key='<key>'
 ```
@@ -216,8 +218,8 @@ if new value is stored in .env then skip akismet_key parameter.
 make change-akismet
 ```
 
-#### Recaptcha.
-Change Cerber Recaptcha API Key/Secret.
+#### Recaptcha
+Change cerber recaptcha key/secret.
 ```bash
 make change-recaptcha recaptcha_key='<key>' recaptcha_secret='<secret>'
 ```
